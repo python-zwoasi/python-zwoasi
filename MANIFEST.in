@@ -1,1 +1,2 @@
-include *.rst LICENSE
+include *.rst LICENSE \
+	zwoasi/examples/zwoasi_demo.py
