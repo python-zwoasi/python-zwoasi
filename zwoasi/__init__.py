@@ -323,23 +323,24 @@ class Camera(object):
                 time.sleep(poll)
             pass
 
-        r = self.get_data_after_exposure(buffer)
+        data = self.get_data_after_exposure(buffer)
+        whbi = self.get_roi_format()
+        shape = [whbi[1], whbi[0]]
+        if whbi[3] == ASI_IMG_RAW8 or whbi[3] == ASI_IMG_Y8:
+            img = np.frombuffer(data, dtype=np.uint8)
+        elif whbi[3] == ASI_IMG_RAW16:
+            img = np.frombuffer(data, dtype=np.uint16)
+        elif whbi[3] == ASI_IMG_RGB24:
+            img = np.frombuffer(data, dtype=np.uint8)
+            shape.append(3)
+        else:
+            raise Exception('Unsupported image type')
+        img = img.reshape(shape)
+
         if filename is not None:
-            whbi = self.get_roi_format()
-            shape = [whbi[1], whbi[0]]
-            if whbi[3] == ASI_IMG_RAW8:
-                img = np.frombuffer(r, dtype=np.uint8)
-            elif whbi[3] == ASI_IMG_RAW16:
-                img = np.frombuffer(r, dtype=np.uint16)
-            elif whbi[3] == ASI_IMG_RGB24:
-                img = np.frombuffer(r, dtype=np.uint8)
-                shape.append(3)
-            else:
-                raise Exception('Unsupported image type for saving')
-            img = img.reshape(shape)
             cv2.imwrite(filename, img)
             logger.debug('wrote %s', filename)
-        return r
+        return img
         
 class _ASI_CAMERA_INFO(c.Structure):
     _fields_ = [
