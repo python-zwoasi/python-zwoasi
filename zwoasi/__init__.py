@@ -11,6 +11,9 @@ import logging
 import os
 import time
 
+import cv2
+import numpy as np
+
 def get_num_cameras():
     return zwolib.ASIGetNumOfConnectedCameras();
 
@@ -184,23 +187,11 @@ def _get_data_after_exposure(id, buffer=None):
         return cbuf
     
 def list_cameras():
+    r = []
     for id in range(get_num_cameras()):
         prop = _get_camera_property(id)
-        print('Camera #%d: %s' % (id, prop['Name']))
-        cam = None
-        try: 
-            print('Num of controls')
-            cam = Camera(id)
-            n = cam.get_num_controls()
-            print(repr(n))
-            print(type(n))
-            print(cam.get_controls())
-            
-        finally:
-            if cam:
-                cam.close()
-            
-        return None
+        r.append('Camera #%d: %s' % (id, prop['Name']))
+    return r
 
 class ZWO_Exception(Exception):
     pass
@@ -322,9 +313,8 @@ class Camera(object):
          self.set_roi_format(*whbi)
          # self.set_roi_format(whbi[0], whbi[1], whbi[2], whbi[3])
 
-    def acquire(self, initial_sleep=0.01, poll=0.01, buffer=None):
-        print('Starting exposure')
-        t1 = time.time()
+    def acquire(self, initial_sleep=0.01, poll=0.01, buffer=None,
+                filename=None):
         self.start_exposure()
         if initial_sleep:
             time.sleep(initial_sleep)
@@ -332,11 +322,24 @@ class Camera(object):
             if poll:
                 time.sleep(poll)
             pass
-        print('Exposure completed')
-        t2 = time.time()
-        print(t2 - t1)
-        print(self.get_exposure_status())
-        return self.get_data_after_exposure(buffer)
+
+        r = self.get_data_after_exposure(buffer)
+        if filename is not None:
+            whbi = self.get_roi_format()
+            shape = [whbi[1], whbi[0]]
+            if whbi[3] == ASI_IMG_RAW8:
+                img = np.frombuffer(r, dtype=np.uint8)
+            elif whbi[3] == ASI_IMG_RAW16:
+                img = np.frombuffer(r, dtype=np.uint16)
+            elif whbi[3] == ASI_IMG_RGB24:
+                img = np.frombuffer(r, dtype=np.uint8)
+                shape.append(3)
+            else:
+                raise Exception('Unsupported image type for saving')
+            img = img.reshape(shape)
+            cv2.imwrite(filename, img)
+            logger.debug('wrote %s', filename)
+        return r
         
 class _ASI_CAMERA_INFO(c.Structure):
     _fields_ = [
