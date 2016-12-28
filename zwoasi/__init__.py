@@ -258,13 +258,11 @@ def _get_data_after_exposure(id, buffer=None):
 
 
 def _get_id(id):
-    buffer = bytearray(8)
-    cbuf_type = c.c_char * len(buffer)
-    cbuf = cbuf_type.from_buffer(buffer)
-    r = zwolib.ASIGetID(id, cbuf)
+    id2 = _ASI_ID()
+    r = zwolib.ASIGetID(id, id2)
     if r:
         raise zwo_errors[r]
-    return str.decode(buffer)
+    return id2.get_id()
 
 # TO DO: need to confirm correct function call parameters
 #def _set_id(id, id_str):
@@ -568,6 +566,12 @@ class _ASI_CONTROL_CAPS(c.Structure):
         return r
 
 
+class _ASI_ID(c.Structure):
+    _fields_ = [('id', c.c_char * 8)]
+
+    def get_id(self):
+        return self.id
+    
 logger = logging.getLogger(__name__)
 
 # ASI_BAYER_PATTERN
@@ -728,14 +732,14 @@ zwolib.ASIGetExpStatus.restype = c.c_int
 zwolib.ASIGetDataAfterExp.argtypes = [c.c_int, c.POINTER(c.c_char), c.c_long]
 zwolib.ASIGetDataAfterExp.restype = c.c_int
 
-zwolib.ASIGetID.argtypes = [c.c_int, c.POINTER(c.c_char)]
+zwolib.ASIGetID.argtypes = [c.c_int, c.POINTER(_ASI_ID)]
 zwolib.ASIGetID.restype = c.c_int
 
 # Include file suggests:
-# zwolib.ASISetID.argtypes = [c.c_int, c.POINTER(c.c_char)]
+# zwolib.ASISetID.argtypes = [c.c_int, _ASI_ID]
 #
 # Suspect it should really be
-# zwolib.ASISetID.argtypes = [c.c_int, c.POINTER(c.c_char)]
+# zwolib.ASISetID.argtypes = [c.c_int, c.POINTER(_ASI_ID)]
 #
 # zwolib.ASISetID.restype = c.c_int
 #
