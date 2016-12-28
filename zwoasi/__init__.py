@@ -3,7 +3,7 @@
 """Interface to ZWO ASI range of USB cameras."""
 
 __author__ = 'Steve Marple'
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 __license__ = 'PSF'
 
 import ctypes as c
