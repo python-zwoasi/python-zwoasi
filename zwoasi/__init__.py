@@ -14,8 +14,10 @@ import time
 import cv2
 import numpy as np
 
+
 def get_num_cameras():
     return zwolib.ASIGetNumOfConnectedCameras();
+
 
 def _get_camera_property(id):
     prop = _ASI_CAMERA_INFO()
@@ -24,11 +26,13 @@ def _get_camera_property(id):
         raise zwo_errors[r]
     return prop.get_dict()
 
+
 def _open_camera(id):
     r = zwolib.ASIOpenCamera(id)
     if r:
         raise zwo_errors[r]
     return
+
 
 def _close_camera(id):
     r = zwolib.ASICloseCamera(id)
@@ -36,12 +40,14 @@ def _close_camera(id):
         raise zwo_errors[r]
     return
 
+
 def _init_camera(id):
     r = zwolib.ASIInitCamera(id)
     if r:
         raise zwo_errors[r]
     return
    
+
 def _get_num_controls(id):
     num = c.c_int()
     r = zwolib.ASIGetNumOfControls(id, num)
@@ -49,12 +55,14 @@ def _get_num_controls(id):
         raise zwo_errors[r]
     return num.value
 
+
 def _get_control_caps(id, control_index):
     caps = _ASI_CONTROL_CAPS()
     r = zwolib.ASIGetControlCaps(id, control_index, caps)
     if r:
         raise zwo_errors(r)
     return caps.get_dict()
+
 
 def _get_roi_format(id):
     roi_width = c.c_int()
@@ -65,6 +73,7 @@ def _get_roi_format(id):
     if r:
         raise zwo_errors(r)
     return [roi_width.value, roi_height.value, bins.value, image_type.value]
+
 
 def _set_roi_format(id, width, height, bins, image_type):
     cam_info = _get_camera_property(id)
@@ -92,6 +101,7 @@ def _set_roi_format(id, width, height, bins, image_type):
         raise zwo_errors(r)
     return
 
+
 def _get_start_position(id):
     start_x = c.c_int()
     start_y = c.c_int()
@@ -99,6 +109,7 @@ def _get_start_position(id):
     if r:
         raise zwo_errors(r)
     return [start_x.value, start_y.value]
+
 
 def _set_start_position(id, start_x, start_y):
     if start_x < 0:
@@ -111,6 +122,7 @@ def _set_start_position(id, start_x, start_y):
         raise zwo_errors(r)
     return
 
+
 def _get_control_value(id, control_type):
     value = c.c_long()
     auto = c.c_int()
@@ -119,11 +131,13 @@ def _get_control_value(id, control_type):
         raise zwo_errors(r)
     return [value.value, bool(auto.value)]
 
+
 def _set_control_value(id, control_type, value, auto):
     r = zwolib.ASISetControlValue(id, control_type, value, auto)
     if r:
         raise zwo_errors(r)
     return
+
 
 def _start_exposure(id, is_dark):
     r = zwolib.ASIStartExposure(id, is_dark)
@@ -131,11 +145,13 @@ def _start_exposure(id, is_dark):
         raise zwo_errors(r)
     return
 
+
 def _stop_exposure(id):
     r = zwolib.ASIStopExposure(id)
     if r:
         raise zwo_errors(r)
     return
+
 
 def _get_exposure_status(id):
     status = c.c_int()
@@ -144,23 +160,8 @@ def _get_exposure_status(id):
         raise zwo_errors(r)
     return status.value
 
-def _get_data_after_exposure(id, buffer=None):
-    
-    # if buffer:
-    #     if not isinstance(buffer, bytearray):
-    #         raise TypeError('supplied buffer must be a bytearray')
-    #     cbuf_type = c.c_char * len(buffer)
-    #     cbuf = cbuf_type.from_buffer(buffer)
-    #     sz = len(buffer)
-    # else:
-    #     whbi = _get_roi_format(id)
-    #     sz = whbi[0] * whbi[1]
-    #     if whbi[3] == ASI_IMG_RGB24:
-    #         sz *= 3
-    #     elif whbi[3] == ASI_IMG_RAW16:
-    #         sz *= 2
-    #     cbuf = c.create_string_buffer(sz)
 
+def _get_data_after_exposure(id, buffer=None):
     if buffer is None:
         whbi = _get_roi_format(id)
         sz = whbi[0] * whbi[1]
@@ -176,16 +177,63 @@ def _get_data_after_exposure(id, buffer=None):
     
     cbuf_type = c.c_char * len(buffer)
     cbuf = cbuf_type.from_buffer(buffer)
-
     r = zwolib.ASIGetDataAfterExp(id, cbuf, sz)
     
     if r:
         raise zwo_errors(r)
-    if buffer:
-        return buffer
-    else:
-        return cbuf
+    return buffer
+
+def _start_video_capture(id):
+    r = zwolib.ASIStartVideoCapture(id)
+    if r:
+        raise zwo_errors(r)
+    return
     
+
+def _stop_video_capture(id):
+    r = zwolib.ASIStopVideoCapture(id)
+    if r:
+        raise zwo_errors(r)
+    return
+
+
+def _get_video_data(id, timeout, buffer=None):
+    if buffer is None:
+        whbi = _get_roi_format(id)
+        sz = whbi[0] * whbi[1]
+        if whbi[3] == ASI_IMG_RGB24:
+            sz *= 3
+        elif whbi[3] == ASI_IMG_RAW16:
+            sz *= 2
+        buffer = bytearray(sz)
+    else:
+        if not isinstance(buffer, bytearray):
+            raise TypeError('supplied buffer must be a bytearray')
+        sz = len(buffer)
+    
+    cbuf_type = c.c_char * len(buffer)
+    cbuf = cbuf_type.from_buffer(buffer)
+    r = zwolib.ASIGetVideoData(id, cbuf, sz, timeout)
+    
+    if r:
+        raise zwo_errors(r)
+    return buffer
+
+
+def _enable_dark_subtract(id, filename):
+    r = zwolib.ASIEnableDarkSubtract(id, filename)
+    if r:
+        raise zwo_errors(r)
+    return
+
+
+def _disable_dark_subtract(id):
+    r = zwolib.ASIDisableDarkSubtract(id)
+    if r:
+        raise zwo_errors(r)
+    return
+    
+
 def list_cameras():
     r = []
     for id in range(get_num_cameras()):
@@ -193,9 +241,11 @@ def list_cameras():
         r.append('Camera #%d: %s' % (id, prop['Name']))
     return r
 
+
 class ZWO_Exception(Exception):
     pass
     
+
 class Camera(object):
     def __init__(self,
                  id=None):
@@ -204,6 +254,7 @@ class Camera(object):
         elif id >= get_num_cameras() or id < 0:
             raise IndexError('invalid id')
         self.id = id
+        self.default_timeout = 2000
         try:
             _open_camera(id)
             self.closed = False
@@ -240,6 +291,12 @@ class Camera(object):
         
     def set_roi_start_position(self, start_x, start_y):
         _set_start_position(self.id, start_x, start_y)
+
+    def enable_dark_subtract(self, filename):
+        _enable_dark_subtract(self.id, filename)
+
+    def disable_dark_subtract(self):
+        _disable_dark_subtract(self.id)
         
     def close(self):
         try:
@@ -303,6 +360,17 @@ class Camera(object):
     def get_data_after_exposure(self, buffer=None):
         return _get_data_after_exposure(self.id, buffer)
 
+    def start_video_capture(self):
+        return _start_video_capture(self.id)
+    
+    def stop_video_capture(self):
+        return _stop_video_capture(self.id)
+
+    def get_video_data(self, timeout=None, buffer=None):
+        if timeout is None:
+            timeout = self.default_timeout
+        return _get_video_data(self.id, timeout, buffer)
+    
     # Helper functions
     def get_image_type(self):
         return self.get_roi_format()[3]
@@ -313,7 +381,8 @@ class Camera(object):
          self.set_roi_format(*whbi)
          # self.set_roi_format(whbi[0], whbi[1], whbi[2], whbi[3])
 
-    def acquire(self, initial_sleep=0.01, poll=0.01, buffer=None,
+
+    def capture(self, initial_sleep=0.01, poll=0.01, buffer=None,
                 filename=None):
         self.start_exposure()
         if initial_sleep:
@@ -341,7 +410,33 @@ class Camera(object):
             cv2.imwrite(filename, img)
             logger.debug('wrote %s', filename)
         return img
+         
+    '''Capture a single frame from video.
+
+    Video mode must have been started previously.
+    '''
+    def capture_video_frame(self, buffer=None, filename=None, timeout=1000):
+        data = self.get_video_data(buffer=buffer, timeout=timeout)
         
+        whbi = self.get_roi_format()
+        shape = [whbi[1], whbi[0]]
+        if whbi[3] == ASI_IMG_RAW8 or whbi[3] == ASI_IMG_Y8:
+            img = np.frombuffer(data, dtype=np.uint8)
+        elif whbi[3] == ASI_IMG_RAW16:
+            img = np.frombuffer(data, dtype=np.uint16)
+        elif whbi[3] == ASI_IMG_RGB24:
+            img = np.frombuffer(data, dtype=np.uint8)
+            shape.append(3)
+        else:
+            raise Exception('Unsupported image type')
+        img = img.reshape(shape)
+
+        if filename is not None:
+            cv2.imwrite(filename, img)
+            logger.debug('wrote %s', filename)
+        return img
+        
+   
 class _ASI_CAMERA_INFO(c.Structure):
     _fields_ = [
         ('Name', c.c_char * 64),
@@ -366,6 +461,8 @@ class _ASI_CAMERA_INFO(c.Structure):
         r = {}
         for k, _ in self._fields_:
             r[k] = getattr(self, k)
+        del r['Unused']
+        
         r['SupportedBins'] = []
         for i in range(len(self.SupportedBins)):
             if self.SupportedBins[i]:
@@ -401,6 +498,7 @@ class _ASI_CONTROL_CAPS(c.Structure):
         r = {}
         for k, _ in self._fields_:
             r[k] = getattr(self, k)
+        del r['Unused']
         for k in ('IsAutoSupported', 'IsWritable'):
             r[k] = bool(getattr(self, k))
         return r
@@ -538,5 +636,21 @@ zwolib.ASIGetExpStatus.restype = c.c_int
 zwolib.ASIGetDataAfterExp.argtypes = [c.c_int, c.POINTER(c.c_char), c.c_long]
 zwolib.ASIGetDataAfterExp.restype = c.c_int
 
+zwolib.ASIStartVideoCapture.argtypes = [c.c_int]
+zwolib.ASIStartVideoCapture.restype = c.c_int
 
+zwolib.ASIStopVideoCapture.argtypes = [c.c_int]
+zwolib.ASIStopVideoCapture.restype = c.c_int
+
+zwolib.ASIGetVideoData.argtypes = [c.c_int,
+                                   c.POINTER(c.c_char),
+                                   c.c_long,
+                                   c.c_int]
+zwolib.ASIGetVideoData.restype = c.c_int
+
+zwolib.ASIEnableDarkSubtract.argtypes = [c.c_int, c.POINTER(c.c_char)]
+zwolib.ASIEnableDarkSubtract.restype = c.c_int
+
+zwolib.ASIDisableDarkSubtract.argtypes = [c.c_int]
+zwolib.ASIDisableDarkSubtract.restype = c.c_int
 
