@@ -311,7 +311,10 @@ class Camera(object):
         except:
             self.closed = True
             _close_camera(id)
-        
+            
+    def __del__(self):
+            self.close()
+            
     def get_camera_property(self):
         return _get_camera_property(self.id)
 
