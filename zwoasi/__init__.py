@@ -16,7 +16,7 @@ import numpy as np
 
 
 def get_num_cameras():
-    return zwolib.ASIGetNumOfConnectedCameras();
+    return zwolib.ASIGetNumOfConnectedCameras()
 
 
 def _get_camera_property(id):
@@ -537,7 +537,7 @@ class _ASI_CAMERA_INFO(c.Structure):
         r['SupportedVideoFormat'] = []
         for i in range(len(self.SupportedVideoFormat)):
             if self.SupportedVideoFormat[i] == ASI_IMG_END:
-                break;
+                break
             r['SupportedVideoFormat'].append(self.SupportedVideoFormat[i])
 
         for k in ('IsColorCam', 'MechanicalShutter', 'IsCoolerCam',
