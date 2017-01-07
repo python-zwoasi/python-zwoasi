@@ -11,7 +11,6 @@ import logging
 import os
 import time
 
-import cv2
 import numpy as np
 
 
@@ -472,6 +471,7 @@ class Camera(object):
         img = img.reshape(shape)
 
         if filename is not None:
+            import cv2
             cv2.imwrite(filename, img)
             logger.debug('wrote %s', filename)
         return img
@@ -497,6 +497,7 @@ class Camera(object):
         img = img.reshape(shape)
 
         if filename is not None:
+            import cv2
             cv2.imwrite(filename, img)
             logger.debug('wrote %s', filename)
         return img
