@@ -38,7 +38,7 @@ setup(
     description='Python binding for the ZWO ASI v2 library.',
     long_description=(read('README.rst') + '\n\n' +
                       read('AUTHORS.rst')),
-    url='https://github.com/stevemarple/zwoasi',
+    url='https://github.com/stevemarple/python-zwoasi',
     license='PSF',
     author='Steve Marple',
     author_email='s.marple@lancaster.ac.uk',
