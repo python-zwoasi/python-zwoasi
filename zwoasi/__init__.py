@@ -350,7 +350,7 @@ class Camera(object):
         try:
             _close_camera(self.id)
         finally:
-            self.is_closed = True
+            self.closed = True
 
     def get_roi(self):
         xywh = self.get_roi_start_position()
