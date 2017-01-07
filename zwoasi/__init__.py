@@ -2,16 +2,15 @@
 
 """Interface to ZWO ASI range of USB cameras."""
 
-__author__ = 'Steve Marple'
-__version__ = '0.0.5'
-__license__ = 'PSF'
-
 import ctypes as c
 import logging
+import numpy as np
 import os
 import time
 
-import numpy as np
+__author__ = 'Steve Marple'
+__version__ = '0.0.5'
+__license__ = 'PSF'
 
 
 def get_num_cameras():
@@ -107,8 +106,7 @@ def _set_roi_format(id, width, height, bins, image_type):
     elif height % 2 != 0:
         raise ValueError('ROI height must be multiple of 2')
 
-    if (cam_info['Name'] in ['ZWO ASI120MM', 'ZWO ASI120MC']
-        and (width * height) % 1024 != 0):
+    if cam_info['Name'] in ['ZWO ASI120MM', 'ZWO ASI120MC'] and (width * height) % 1024 != 0:
         raise ValueError('ROI width * height must be multiple of 1024 for ' +
                          cam_info['Name'])
     r = zwolib.ASISetROIFormat(id, width, height, bins, image_type)
@@ -264,7 +262,7 @@ def _get_id(id):
     return id2.get_id()
 
 # TO DO: need to confirm correct function call parameters
-#def _set_id(id, id_str):
+# def _set_id(id, id_str):
 #     pass
 
 
@@ -358,7 +356,7 @@ class Camera(object):
         return xywh
 
     def set_roi(self, start_x=None, start_y=None, width=None, height=None, bins=None, image_type=None):
-        xy = self.get_roi_start_position()
+        # xy = self.get_roi_start_position()
         whbi = self.get_roi_format()
 
         if bins is None:
@@ -384,7 +382,6 @@ class Camera(object):
 
         self.set_roi_format(width, height, bins, image_type)
         self.set_roi_start_position(start_x, start_y)
-                
 
     def get_control_value(self, control_type):
         return _get_control_value(self.id, control_type)
@@ -398,8 +395,8 @@ class Camera(object):
     def start_exposure(self, is_dark=False):
         _start_exposure(self.id, is_dark)
 
-    def stop_exposure(self, is_dark=False):
-        _stop_exposure(self.id, is_dark)
+    def stop_exposure(self):
+        _stop_exposure(self.id)
         
     def get_exposure_status(self):
         return _get_exposure_status(self.id)
@@ -440,11 +437,10 @@ class Camera(object):
         return self.get_roi_format()[3]
 
     def set_image_type(self, image_type):
-         whbi = self.get_roi_format()
-         whbi[3] = image_type
-         self.set_roi_format(*whbi)
-         # self.set_roi_format(whbi[0], whbi[1], whbi[2], whbi[3])
-
+        whbi = self.get_roi_format()
+        whbi[3] = image_type
+        self.set_roi_format(*whbi)
+        # self.set_roi_format(whbi[0], whbi[1], whbi[2], whbi[3])
 
     def capture(self, initial_sleep=0.01, poll=0.01, buffer=None,
                 filename=None):
@@ -513,7 +509,7 @@ class _ASI_CAMERA_INFO(c.Structure):
         ('BayerPattern', c.c_int),
         ('SupportedBins', c.c_int * 16),
         ('SupportedVideoFormat', c.c_int * 8),
-        ('PixelSize', c.c_double), # in um
+        ('PixelSize', c.c_double),  # in um
         ('MechanicalShutter', c.c_int),
         ('ST4Port', c.c_int),
         ('IsCoolerCam', c.c_int),
@@ -605,7 +601,7 @@ ASI_WB_B = 4
 ASI_BRIGHTNESS = 5
 ASI_BANDWIDTHOVERLOAD = 6
 ASI_OVERCLOCK = 7
-ASI_TEMPERATURE = 8 # return 10*temperature
+ASI_TEMPERATURE = 8  # return 10*temperature
 ASI_FLIP = 9
 ASI_AUTO_MAX_GAIN = 10
 ASI_AUTO_MAX_EXP = 11
@@ -613,9 +609,9 @@ ASI_AUTO_MAX_BRIGHTNESS = 12
 ASI_HARDWARE_BIN = 13
 ASI_HIGH_SPEED_MODE = 14
 ASI_COOLER_POWER_PERC = 15
-ASI_TARGET_TEMP = 16 # not need *10
+ASI_TARGET_TEMP = 16  # not need *10
 ASI_COOLER_ON = 17
-ASI_MONO_BIN = 18 # lead to less grid at software bin mode for color camera
+ASI_MONO_BIN = 18  # lead to less grid at software bin mode for color camera
 ASI_FAN_ON = 19
 ASI_PATTERN_ADJUST = 20
 
