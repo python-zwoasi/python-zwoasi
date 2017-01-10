@@ -292,8 +292,7 @@ class ZWO_Exception(Exception):
     
 
 class Camera(object):
-    def __init__(self,
-                 id=None):
+    def __init__(self, id):
         if not isinstance(id, int):
             raise TypeError('id must be an integer')
         elif id >= get_num_cameras() or id < 0:
