@@ -10,18 +10,21 @@ if num_cameras == 0:
     sys.exit(0)
 
 
-camera_id = 0
-camera = asi.Camera(camera_id)
-camera_info = camera.get_camera_property()
+cameras_found = asi.list_cameras()  # Models names of the connected cameras
 
 if num_cameras == 1:
-    print('Found one camera: %s' % camera_info['Name'])
-else:
     camera_id = 0
+    print('Found one camera: %s' % cameras_found[0])
+else:
     print('Found %d cameras' % num_cameras)
-    print('\n'.join(asi.list_cameras()))
-    print('Using #%d: %s' % (camera_id, camera_info['Name']))
+    for n in range(num_cameras):
+        print('    %d: %s' % (n, cameras[n]))
+    # TO DO: allow user to select a camera
+    camera_id = 0
+    print('Using #%d: %s' % (camera_id, cameras_found[camera_id]))
 
+camera = asi.Camera(camera_id)
+camera_info = camera.get_camera_property()
 
 # Get all of the camera controls
 print('')
