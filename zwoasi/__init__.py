@@ -138,7 +138,7 @@ def _set_start_position(id, start_x, start_y):
 
 def _get_dropped_frames(id):
     dropped_frames = c.c_int()
-    r = zwo_errors.ASIGetDroppedFrames(id, dropped_frames)
+    r = zwolib.ASIGetDroppedFrames(id, dropped_frames)
     if r:
         raise zwo_errors[r]
     return dropped_frames.value
