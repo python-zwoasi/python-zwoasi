@@ -4,11 +4,17 @@ import sys
 import time
 import zwoasi as asi
 
+def save_control_values(filename, settings):
+    with open(filename + '.txt', 'w') as f:
+        for k in sorted(settings.keys()):
+            f.write('%s: %s\n' % (k, str(settings[k])))
+    print('Camera settings saved to %s' % filename)
+
+
 num_cameras = asi.get_num_cameras()
 if num_cameras == 0:
     print('No cameras found')
     sys.exit(0)
-
 
 cameras_found = asi.list_cameras()  # Models names of the connected cameras
 
@@ -51,8 +57,9 @@ camera.set_control_value(asi.ASI_FLIP, 0)
 print('Capturing a single 8-bit mono image')
 filename = 'image_mono.png'
 camera.set_image_type(asi.ASI_IMG_RAW8)
-img = camera.capture(filename=filename)
+camera.capture(filename=filename)
 print('Saved to %s' % filename)
+save_control_values(filename, camera.get_control_values())
 
 
 print('Capturing a single 16-bit mono image')
@@ -60,6 +67,7 @@ filename = 'image_mono16.png'
 camera.set_image_type(asi.ASI_IMG_RAW16)
 camera.capture(filename=filename)
 print('Saved to %s' % filename)
+save_control_values(filename, camera.get_control_values())
 
 if camera_info['IsColorCam']:
     filename = 'image_color.png'
@@ -67,6 +75,7 @@ if camera_info['IsColorCam']:
     print('Capturing a single, color image')
     camera.capture(filename=filename)
     print('Saved to %s' % filename)
+    save_control_values(filename, camera.get_control_values())
 else:
     print('Color image not available with this camera')
     
@@ -101,19 +110,24 @@ filename = 'image_video_mono.png'
 camera.set_image_type(asi.ASI_IMG_RAW8)
 camera.capture_video_frame(filename=filename)
 print('Saved to %s' % filename)
+save_control_values(filename, camera.get_control_values())
+
 
 print('Capturing a single 16-bit mono frame')
 filename = 'image_video_mono16.png'
 camera.set_image_type(asi.ASI_IMG_RAW16)
 camera.capture_video_frame(filename=filename)
 print('Saved to %s' % filename)
+save_control_values(filename, camera.get_control_values())
 
 if camera_info['IsColorCam']:
     print('Capturing a single, color image')
     filename = 'image_video_color.png'
     camera.set_image_type(asi.ASI_IMG_RGB24)
     camera.capture_video_frame(filename=filename)
+    save_control_values(filename, camera.get_control_values())
     print('Saved to %s' % filename)
+    
 else:
     print('Color image not available with this camera')
 
