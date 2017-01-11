@@ -9,7 +9,7 @@ import os
 import time
 
 __author__ = 'Steve Marple'
-__version__ = '0.0.7'
+__version__ = '0.0.8'
 __license__ = 'PSF'
 
 
