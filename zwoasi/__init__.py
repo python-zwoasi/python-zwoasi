@@ -496,8 +496,25 @@ class Camera(object):
             cv2.imwrite(filename, img)
             logger.debug('wrote %s', filename)
         return img
-        
-   
+
+    def get_control_values(self):
+        controls = self.get_controls()
+        r = {}
+        for k in controls:
+            r[k] = self.get_control_value(controls[k]['ControlType'])[0]
+
+        # Fix up certain keys
+        if 'Exposure' in r:
+            # Return a value in seconds, no microseconds
+            r['Exposure'] /= 1000000.0
+        if 'Temperature' in r:
+            # Return a value in Celsius
+            r['Temperature'] /= 10.0
+        if 'Flip' in r:
+            r['Flip'] = {0: 'None', 1: 'Horizontal', 2: 'Vertical', 3: 'Both'}[r['Flip']]
+        return r
+
+
 class _ASI_CAMERA_INFO(c.Structure):
     _fields_ = [
         ('Name', c.c_char * 64),
