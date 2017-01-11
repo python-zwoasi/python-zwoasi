@@ -505,16 +505,6 @@ class Camera(object):
         r = {}
         for k in controls:
             r[k] = self.get_control_value(controls[k]['ControlType'])[0]
-
-        # Fix up certain keys
-        if 'Exposure' in r:
-            # Return a value in seconds, no microseconds
-            r['Exposure'] /= 1000000.0
-        if 'Temperature' in r:
-            # Return a value in Celsius
-            r['Temperature'] /= 10.0
-        if 'Flip' in r:
-            r['Flip'] = {0: 'None', 1: 'Horizontal', 2: 'Vertical', 3: 'Both'}[r['Flip']]
         return r
 
 
