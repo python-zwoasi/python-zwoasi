@@ -298,7 +298,7 @@ class Camera(object):
         elif id >= get_num_cameras() or id < 0:
             raise IndexError('invalid id')
         self.id = id
-        self.default_timeout = 2000
+        self.default_timeout = -1
         try:
             _open_camera(id)
             self.closed = False
@@ -478,7 +478,7 @@ class Camera(object):
 
     Video mode must have been started previously.
     '''
-    def capture_video_frame(self, buffer=None, filename=None, timeout=1000):
+    def capture_video_frame(self, buffer=None, filename=None, timeout=None):
         data = self.get_video_data(buffer=buffer, timeout=timeout)
         
         whbi = self.get_roi_format()
