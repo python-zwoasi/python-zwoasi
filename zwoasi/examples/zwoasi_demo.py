@@ -83,7 +83,7 @@ else:
 
 # Enable video mode
 try:
-    # Force any signle exposure to be halted
+    # Force any single exposure to be halted
     camera.stop_exposure()
 except:
     pass
@@ -91,6 +91,11 @@ except:
 print('Enabling video mode')
 camera.start_video_capture()
 camera.default_timeout = 2000
+
+# Restore all controls to default values
+for c in controls:
+    camera.set_control_value(controls[c]['ControlType'], controls[c]['DefaultValue'])
+
 # Can autoexposure be used?
 k = 'Exposure'
 if k in controls and controls[k]['IsAutoSupported']:
