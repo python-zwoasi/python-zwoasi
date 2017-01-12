@@ -5,7 +5,8 @@ import time
 import zwoasi as asi
 
 def save_control_values(filename, settings):
-    with open(filename + '.txt', 'w') as f:
+    filename += '.txt'
+    with open(filename, 'w') as f:
         for k in sorted(settings.keys()):
             f.write('%s: %s\n' % (k, str(settings[k])))
     print('Camera settings saved to %s' % filename)
@@ -55,7 +56,7 @@ camera.set_control_value(asi.ASI_BRIGHTNESS, 50)
 camera.set_control_value(asi.ASI_FLIP, 0)
 
 print('Capturing a single 8-bit mono image')
-filename = 'image_mono.png'
+filename = 'image_mono.jpg'
 camera.set_image_type(asi.ASI_IMG_RAW8)
 camera.capture(filename=filename)
 print('Saved to %s' % filename)
@@ -63,14 +64,14 @@ save_control_values(filename, camera.get_control_values())
 
 
 print('Capturing a single 16-bit mono image')
-filename = 'image_mono16.png'
+filename = 'image_mono16.jpg'
 camera.set_image_type(asi.ASI_IMG_RAW16)
 camera.capture(filename=filename)
 print('Saved to %s' % filename)
 save_control_values(filename, camera.get_control_values())
 
 if camera_info['IsColorCam']:
-    filename = 'image_color.png'
+    filename = 'image_color.jpg'
     camera.set_image_type(asi.ASI_IMG_RGB24)
     print('Capturing a single, color image')
     camera.capture(filename=filename)
@@ -90,7 +91,6 @@ except:
 
 print('Enabling video mode')
 camera.start_video_capture()
-camera.default_timeout = 2000
 
 # Restore all controls to default values
 for c in controls:
@@ -98,43 +98,64 @@ for c in controls:
 
 # Can autoexposure be used?
 k = 'Exposure'
-if k in controls and controls[k]['IsAutoSupported']:
+if 'Exposure' in controls and controls['Exposure']['IsAutoSupported']:
     print('Enabling auto-exposure mode')
-    camera.set_control_value(asi.ASI_GAIN,
-                             controls['Gain']['MinValue'],
-                             auto=True)
     camera.set_control_value(asi.ASI_EXPOSURE,
-                             controls['Exposure']['MinValue'],
+                             controls['Exposure']['DefaultValue'],
                              auto=True)
 
-    print('Sleeping to let auto-exposure compute correct settings')
-    time.sleep(2)
-    
-print('Capturing a single 8-bit mono frame')
-filename = 'image_video_mono.png'
-camera.set_image_type(asi.ASI_IMG_RAW8)
-camera.capture_video_frame(filename=filename)
-print('Saved to %s' % filename)
-save_control_values(filename, camera.get_control_values())
+    if 'Gain' in controls and controls['Gain']['IsAutoSupported']:
+        print('Enabling automatic gain setting')
+        camera.set_control_value(asi.ASI_GAIN,
+                                 controls['Gain']['DefaultValue'],
+                                 auto=True)
 
+    # Keep max gain to the default but allow exposure to be increased to its maximum value if necessary
+    camera.set_control_value(controls['AutoExpMaxExp']['ControlType'], controls['AutoExpMaxExp']['MaxValue'])
 
-print('Capturing a single 16-bit mono frame')
-filename = 'image_video_mono16.png'
-camera.set_image_type(asi.ASI_IMG_RAW16)
-camera.capture_video_frame(filename=filename)
-print('Saved to %s' % filename)
-save_control_values(filename, camera.get_control_values())
+    print('Waiting for auto-exposure to compute correct settings ...')
+    sleep_interval = 0.100
+    df_last = None
+    gain_last = None
+    exposure_last = None
+    matches = 0
+    while True:
+        time.sleep(sleep_interval)
+        settings = camera.get_control_values()
+        df = camera.get_dropped_frames()
+        gain = settings['Gain']
+        exposure = settings['Exposure']
+        if df != df_last:
+            print('   Gain {gain:d}  Exposure: {exposure:f} Dropped frames: {df:d}'.format(gain=settings['Gain'],
+                                                                                        exposure=settings['Exposure'],
+                                                                                        df=df))
+            if gain == gain_last and exposure == exposure_last:
+                matches += 1
+            else:
+                matches = 0
+            if matches >= 5:
+                break
+            df_last = df
+            gain_last = gain
+            exposure_last = exposure
+
+# Set the timeout, units are ms
+timeout = (camera.get_control_value(asi.ASI_EXPOSURE)[0] / 1000) * 2 + 500
+camera.default_timeout = timeout
 
 if camera_info['IsColorCam']:
-    print('Capturing a single, color image')
-    filename = 'image_video_color.png'
+    print('Capturing a single color image')
+    filename = 'image_video_color.jpg'
     camera.set_image_type(asi.ASI_IMG_RGB24)
     camera.capture_video_frame(filename=filename)
-    save_control_values(filename, camera.get_control_values())
-    print('Saved to %s' % filename)
-    
 else:
-    print('Color image not available with this camera')
+    print('Capturing a single 8-bit mono frame')
+    filename = 'image_video_mono.jpg'
+    camera.set_image_type(asi.ASI_IMG_RAW8)
+    camera.capture_video_frame(filename=filename)
+
+print('Saved to %s' % filename)
+save_control_values(filename, camera.get_control_values())
 
 
 
