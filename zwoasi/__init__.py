@@ -442,7 +442,6 @@ class Camera(object):
         whbi = self.get_roi_format()
         whbi[3] = image_type
         self.set_roi_format(*whbi)
-        # self.set_roi_format(whbi[0], whbi[1], whbi[2], whbi[3])
 
     def capture(self, initial_sleep=0.01, poll=0.01, buffer=None,
                 filename=None):
