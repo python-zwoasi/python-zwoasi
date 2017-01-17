@@ -144,7 +144,7 @@ timeout = (camera.get_control_value(asi.ASI_EXPOSURE)[0] / 1000) * 2 + 500
 camera.default_timeout = timeout
 
 if camera_info['IsColorCam']:
-    print('Capturing a single color image')
+    print('Capturing a single color frame')
     filename = 'image_video_color.jpg'
     camera.set_image_type(asi.ASI_IMG_RGB24)
     camera.capture_video_frame(filename=filename)
