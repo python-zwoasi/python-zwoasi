@@ -472,8 +472,14 @@ class Camera(object):
         img = img.reshape(shape)
 
         if filename is not None:
-            import cv2
-            cv2.imwrite(filename, img)
+            from PIL import Image
+            mode = None
+            if len(img.shape) == 3:
+                img = img[:, :, ::-1]  # Convert BGR to RGB
+            if whbi[3] == ASI_IMG_RAW16:
+                mode = 'I;16'
+            image = Image.fromarray(img, mode=mode)
+            image.save(filename)
             logger.debug('wrote %s', filename)
         return img
          
@@ -498,8 +504,15 @@ class Camera(object):
         img = img.reshape(shape)
 
         if filename is not None:
-            import cv2
-            cv2.imwrite(filename, img)
+            from PIL import Image
+            mode = None
+            if len(img.shape) == 3:
+                img = img[:, :, ::-1]  # Convert BGR to RGB
+            if whbi[3] == ASI_IMG_RAW16:
+                mode = 'I;16'
+            image = Image.fromarray(img, mode=mode)
+            image.save(filename)
+            
             logger.debug('wrote %s', filename)
         return img
 
