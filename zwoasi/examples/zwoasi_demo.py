@@ -64,7 +64,7 @@ save_control_values(filename, camera.get_control_values())
 
 
 print('Capturing a single 16-bit mono image')
-filename = 'image_mono16.jpg'
+filename = 'image_mono16.tiff'
 camera.set_image_type(asi.ASI_IMG_RAW16)
 camera.capture(filename=filename)
 print('Saved to %s' % filename)
