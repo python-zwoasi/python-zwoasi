@@ -305,10 +305,10 @@ class Camera(object):
 
             _init_camera(id)
         except Exception as e:
-            print(e)
             self.closed = True
             _close_camera(id)
             logger.error('could not open camera ' + str(id))
+            logger.debug(traceback.format_exc())
             raise
             
     def __del__(self):
