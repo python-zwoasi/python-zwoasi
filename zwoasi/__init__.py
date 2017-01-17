@@ -453,6 +453,10 @@ class Camera(object):
                 time.sleep(poll)
             pass
 
+        status = self.get_exposure_status()
+        if status != ASI_EXP_SUCCESS:
+            raise ZWO_Exception('Exposure problem (status was %d)' % status)
+        
         data = self.get_data_after_exposure(buffer)
         whbi = self.get_roi_format()
         shape = [whbi[1], whbi[0]]
