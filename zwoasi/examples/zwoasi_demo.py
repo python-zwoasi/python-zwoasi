@@ -55,6 +55,15 @@ camera.set_control_value(asi.ASI_GAMMA, 50)
 camera.set_control_value(asi.ASI_BRIGHTNESS, 50)
 camera.set_control_value(asi.ASI_FLIP, 0)
 
+
+print('Enabling stills mode')
+try:
+    # Force any single exposure to be halted
+    camera.stop_video_capture()
+    camera.stop_exposure()
+except:
+    pass
+
 print('Capturing a single 8-bit mono image')
 filename = 'image_mono.jpg'
 camera.set_image_type(asi.ASI_IMG_RAW8)
