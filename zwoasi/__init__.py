@@ -10,7 +10,7 @@ import time
 import traceback
 
 __author__ = 'Steve Marple'
-__version__ = '0.0.12'
+__version__ = '0.0.13'
 __license__ = 'PSF'
 
 
