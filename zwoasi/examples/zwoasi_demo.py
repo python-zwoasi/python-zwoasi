@@ -44,6 +44,9 @@ for cn in sorted(controls.keys()):
         print('        %s: %s' % (k, repr(controls[cn][k])))
 
 
+# Use minimum USB bandwidth permitted
+camera.set_control_value(asi.ASI_BANDWIDTHOVERLOAD, camera.get_controls()['BandWidth']['MinValue'])
+
 # Set some sensible defaults. They will need adjusting depending upon
 # the sensitivity, lens and lighting conditions used.
 camera.disable_dark_subtract()
@@ -104,8 +107,10 @@ except:
 print('Enabling video mode')
 camera.start_video_capture()
 
-# Restore all controls to default values
+# Restore all controls to default values except USB bandwidth
 for c in controls:
+    if controls[c]['ControlType'] == asi.ASI_BANDWIDTHOVERLOAD:
+        continue
     camera.set_control_value(controls[c]['ControlType'], controls[c]['DefaultValue'])
 
 # Can autoexposure be used?
