@@ -190,7 +190,7 @@ def _get_video_data(id, timeout, buffer=None):
     
     cbuf_type = c.c_char * len(buffer)
     cbuf = cbuf_type.from_buffer(buffer)
-    r = zwolib.ASIGetVideoData(id, cbuf, sz, timeout)
+    r = zwolib.ASIGetVideoData(id, cbuf, sz, int(timeout))
     
     if r:
         raise zwo_errors[r]
