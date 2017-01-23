@@ -6,6 +6,7 @@ import ctypes as c
 import logging
 import numpy as np
 import os
+import sys
 import time
 import traceback
 
@@ -549,7 +550,10 @@ class _ASI_CAMERA_INFO(c.Structure):
     def get_dict(self):
         r = {}
         for k, _ in self._fields_:
-            r[k] = getattr(self, k)
+            v = getattr(self, k)
+            if sys.version_info[0] >= 3 and isinstance(v, bytes):
+                v = v.decode()
+            r[k] = v
         del r['Unused']
         
         r['SupportedBins'] = []
@@ -586,7 +590,10 @@ class _ASI_CONTROL_CAPS(c.Structure):
     def get_dict(self):
         r = {}
         for k, _ in self._fields_:
-            r[k] = getattr(self, k)
+            v = getattr(self, k)
+            if sys.version_info[0] >= 3 and isinstance(v, bytes):
+                v = v.decode()
+            r[k] = v
         del r['Unused']
         for k in ('IsAutoSupported', 'IsWritable'):
             r[k] = bool(getattr(self, k))
