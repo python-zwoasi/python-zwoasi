@@ -7,6 +7,7 @@ import logging
 import numpy as np
 import os
 import time
+import traceback
 
 __author__ = 'Steve Marple'
 __version__ = '0.0.12'
@@ -359,6 +360,7 @@ class Camera(object):
 
     def set_roi(self, start_x=None, start_y=None, width=None, height=None, bins=None, image_type=None):
         # xy = self.get_roi_start_position()
+        cam_info = self.get_camera_property()
         whbi = self.get_roi_format()
 
         if bins is None:

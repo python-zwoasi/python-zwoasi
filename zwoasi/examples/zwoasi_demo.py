@@ -4,6 +4,7 @@ import sys
 import time
 import zwoasi as asi
 
+
 def save_control_values(filename, settings):
     filename += '.txt'
     with open(filename, 'w') as f:
@@ -25,7 +26,7 @@ if num_cameras == 1:
 else:
     print('Found %d cameras' % num_cameras)
     for n in range(num_cameras):
-        print('    %d: %s' % (n, cameras[n]))
+        print('    %d: %s' % (n, cameras_found[n]))
     # TO DO: allow user to select a camera
     camera_id = 0
     print('Using #%d: %s' % (camera_id, cameras_found[camera_id]))
@@ -61,6 +62,8 @@ try:
     # Force any single exposure to be halted
     camera.stop_video_capture()
     camera.stop_exposure()
+except (KeyboardInterrupt, SystemExit):
+    raise
 except:
     pass
 
@@ -89,12 +92,12 @@ if camera_info['IsColorCam']:
 else:
     print('Color image not available with this camera')
     
-
-
 # Enable video mode
 try:
     # Force any single exposure to be halted
     camera.stop_exposure()
+except (KeyboardInterrupt, SystemExit):
+    raise
 except:
     pass
 
@@ -135,9 +138,10 @@ if 'Exposure' in controls and controls['Exposure']['IsAutoSupported']:
         gain = settings['Gain']
         exposure = settings['Exposure']
         if df != df_last:
-            print('   Gain {gain:d}  Exposure: {exposure:f} Dropped frames: {df:d}'.format(gain=settings['Gain'],
-                                                                                        exposure=settings['Exposure'],
-                                                                                        df=df))
+            print('   Gain {gain:d}  Exposure: {exposure:f} Dropped frames: {df:d}'
+                  .format(gain=settings['Gain'],
+                          exposure=settings['Exposure'],
+                          df=df))
             if gain == gain_last and exposure == exposure_last:
                 matches += 1
             else:
@@ -165,8 +169,3 @@ else:
 
 print('Saved to %s' % filename)
 save_control_values(filename, camera.get_control_values())
-
-
-
-    
-
