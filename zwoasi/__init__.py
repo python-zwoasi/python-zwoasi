@@ -12,7 +12,7 @@ import traceback
 
 __author__ = 'Steve Marple'
 __version__ = '0.0.14'
-__license__ = 'PSF'
+__license__ = 'MIT'
 
 
 def get_num_cameras():

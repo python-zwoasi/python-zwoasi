@@ -5,6 +5,11 @@ import time
 import zwoasi as asi
 
 
+__author__ = 'Steve Marple'
+__version__ = '0.0.14'
+__license__ = 'MIT'
+
+
 def save_control_values(filename, settings):
     filename += '.txt'
     with open(filename, 'w') as f:
