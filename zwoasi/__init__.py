@@ -11,7 +11,7 @@ import time
 import traceback
 
 __author__ = 'Steve Marple'
-__version__ = '0.0.15'
+__version__ = '0.0.16'
 __license__ = 'MIT'
 
 
