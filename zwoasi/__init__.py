@@ -360,29 +360,32 @@ class Camera(object):
         return xywh
 
     def set_roi(self, start_x=None, start_y=None, width=None, height=None, bins=None, image_type=None):
-        # xy = self.get_roi_start_position()
         cam_info = self.get_camera_property()
         whbi = self.get_roi_format()
 
         if bins is None:
             bins = whbi[2]
+        elif 'SupportedBins' in cam_info and bins not in cam_info['SupportedBins']:
+            raise ValueError('illegal value for bins')
 
         if image_type is None:
             image_type = whbi[3]
             
         if width is None:
             width = cam_info['MaxWidth'] / bins
+            width -= width % 8  # Must be a multiple of 8
 
         if height is None:
             height = cam_info['MaxHeight'] / bins
+            height -= height % 2  # Must be a multiple of 2
 
         if start_x is None:
-            start_x = (cam_info['MaxWidth'] - width) / 2
-        if start_x + width > cam_info['MaxWidth'] / 2:
+            start_x = ((cam_info['MaxWidth']/bins) - width) / 2
+        if start_x + width > cam_info['MaxWidth'] / bins:
             raise ValueError('ROI and start position larger than binned sensor width')
         if start_y is None:
-            start_y = (cam_info['MaxHeight'] - height) / 2
-        if start_y + height > cam_info['MaxHeight'] / 2:
+            start_y = ((cam_info['MaxHeight']/bins) - height) / 2
+        if start_y + height > cam_info['MaxHeight'] / bins:
             raise ValueError('ROI and start position larger than binned sensor height')
 
         self.set_roi_format(width, height, bins, image_type)
@@ -525,6 +528,22 @@ class Camera(object):
         for k in controls:
             r[k] = self.get_control_value(controls[k]['ControlType'])[0]
         return r
+
+    def auto_exposure(self, auto=('Exposure', 'Gain')):
+        controls = self.get_controls()
+        r = []
+        for c in auto:
+            if c == 'BandWidth':
+                continue  # auto setting is supported but is not an exposure setting
+            if c in controls and controls[c]['IsAutoSupported']:
+                self.set_control_value(controls[c]['ControlType'],
+                                       controls[c]['DefaultValue'],
+                                       auto=True)
+                r.append(c)
+        return r
+
+    def auto_wb(self, wb=('WB_B', 'WB_R')):
+        return self.auto_exposure(auto=wb)
 
 
 class _ASI_CAMERA_INFO(c.Structure):
