@@ -39,7 +39,7 @@ setup(
     long_description=(read('README.rst') + '\n\n' +
                       read('AUTHORS.rst')),
     url='https://github.com/stevemarple/python-zwoasi',
-    license='PSF',
+    license='MIT',
     author='Steve Marple',
     author_email='s.marple@lancaster.ac.uk',
     packages=find_packages(exclude=['tests*']),
