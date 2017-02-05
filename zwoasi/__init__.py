@@ -17,7 +17,7 @@ __license__ = 'MIT'
 
 
 def get_num_cameras():
-    """Retrives the number of ZWO ASI cameras that are connected."""
+    """Retrieves the number of ZWO ASI cameras that are connected."""
     return zwolib.ASIGetNumOfConnectedCameras()
 
 
