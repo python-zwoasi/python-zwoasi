@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Interface to ZWO ASI range of USB cameras."""
 
 import ctypes as c
@@ -293,6 +291,7 @@ def list_cameras():
 
 class ZWO_Exception(Exception):
     """Exception class for all errors returned from the ASI library."""
+
     pass
     
 
@@ -301,6 +300,7 @@ class Camera(object):
 
     The constructor for a camera object requires the camera ID number or model. The camera destructor automatically
     closes the camera."""
+
     def __init__(self, id_):
         if isinstance(id_, int):
             if id_ >= get_num_cameras() or id_ < 0:
@@ -371,8 +371,8 @@ class Camera(object):
     def close(self):
         """Close the camera in the ASI library.
 
-        The destructor will automatically close the camera if it has not already been closed.
-        """
+        The destructor will automatically close the camera if it has not already been closed."""
+
         try:
             _close_camera(self.id)
         finally:
@@ -382,6 +382,7 @@ class Camera(object):
         """Retrieves the region of interest (ROI).
 
         Returns a :class:`tuple` containing ``(start_x, start_y, width, height)``."""
+
         xywh = self.get_roi_start_position()
         whbi = self.get_roi_format()
         xywh.extend(whbi[0:2])
@@ -443,6 +444,7 @@ class Camera(object):
 
         A pixel binning of one means no binning is active, a value of 2 indicates two pixels horizontally and two
         pixels vertically are binned."""
+
         return self.get_roi_format()[2]
 
     def start_exposure(self, is_dark=False):
