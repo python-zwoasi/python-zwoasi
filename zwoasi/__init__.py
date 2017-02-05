@@ -6,6 +6,7 @@ import ctypes as c
 import logging
 import numpy as np
 import os
+import six
 import sys
 import time
 import traceback
@@ -301,13 +302,26 @@ class ZWO_Exception(Exception):
 class Camera(object):
     """Representation of ZWO ASI camera.
 
-    The constructor for a camera object requires the camera ID number. The camera destructor automatically closes the
-    camera."""
+    The constructor for a camera object requires the camera ID number or model. The camera destructor automatically
+    closes the camera."""
     def __init__(self, id):
-        if not isinstance(id, int):
-            raise TypeError('id must be an integer')
-        elif id >= get_num_cameras() or id < 0:
-            raise IndexError('invalid id')
+        if isinstance(id, int):
+            if id >= get_num_cameras() or id < 0:
+                raise IndexError('invalid id')
+        elif isinstance(id, six.string_types):
+            # Find first matching camera model
+            found = False
+            for n in range(get_num_cameras()):
+                prop = _get_camera_property(n)
+                if prop['Name'] in (id, 'ZWO ' + id):
+                    found = True
+                    break
+            if not found:
+                raise ValueError('could not find camera model %s' % id)
+            id = n
+        else:
+            raise TypeError('unknown type for id')
+
         self.id = id
         self.default_timeout = -1
         try:
