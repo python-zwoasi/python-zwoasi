@@ -21,80 +21,80 @@ def get_num_cameras():
     return zwolib.ASIGetNumOfConnectedCameras()
 
 
-def _get_camera_property(id):
+def _get_camera_property(id_):
     prop = _ASI_CAMERA_INFO()
-    r = zwolib.ASIGetCameraProperty(prop, id)
+    r = zwolib.ASIGetCameraProperty(prop, id_)
     if r:
         raise zwo_errors[r]
     return prop.get_dict()
 
 
-def _open_camera(id):
-    r = zwolib.ASIOpenCamera(id)
+def _open_camera(id_):
+    r = zwolib.ASIOpenCamera(id_)
     if r:
         raise zwo_errors[r]
     return
 
 
-def _init_camera(id):
-    r = zwolib.ASIInitCamera(id)
+def _init_camera(id_):
+    r = zwolib.ASIInitCamera(id_)
     if r:
         raise zwo_errors[r]
     return
    
 
-def _close_camera(id):
-    r = zwolib.ASICloseCamera(id)
+def _close_camera(id_):
+    r = zwolib.ASICloseCamera(id_)
     if r:
         raise zwo_errors[r]
     return
 
 
-def _get_num_controls(id):
+def _get_num_controls(id_):
     num = c.c_int()
-    r = zwolib.ASIGetNumOfControls(id, num)
+    r = zwolib.ASIGetNumOfControls(id_, num)
     if r:
         raise zwo_errors[r]
     return num.value
 
 
-def _get_control_caps(id, control_index):
+def _get_control_caps(id_, control_index):
     caps = _ASI_CONTROL_CAPS()
-    r = zwolib.ASIGetControlCaps(id, control_index, caps)
+    r = zwolib.ASIGetControlCaps(id_, control_index, caps)
     if r:
         raise zwo_errors[r]
     return caps.get_dict()
 
 
-def _get_control_value(id, control_type):
+def _get_control_value(id_, control_type):
     value = c.c_long()
     auto = c.c_int()
-    r = zwolib.ASIGetControlValue(id, control_type, value, auto)
+    r = zwolib.ASIGetControlValue(id_, control_type, value, auto)
     if r:
         raise zwo_errors[r]
     return [value.value, bool(auto.value)]
 
 
-def _set_control_value(id, control_type, value, auto):
-    r = zwolib.ASISetControlValue(id, control_type, value, auto)
+def _set_control_value(id_, control_type, value, auto):
+    r = zwolib.ASISetControlValue(id_, control_type, value, auto)
     if r:
         raise zwo_errors[r]
     return
 
 
-def _get_roi_format(id):
+def _get_roi_format(id_):
     roi_width = c.c_int()
     roi_height = c.c_int()
     bins = c.c_int()
     image_type = c.c_int()
-    r = zwolib.ASIGetROIFormat(id, roi_width, roi_height, bins, image_type)
+    r = zwolib.ASIGetROIFormat(id_, roi_width, roi_height, bins, image_type)
     if r:
         raise zwo_errors[r]
     return [roi_width.value, roi_height.value, bins.value, image_type.value]
 
 
-def _set_roi_format(id, width, height, bins, image_type):
-    cam_info = _get_camera_property(id)
+def _set_roi_format(id_, width, height, bins, image_type):
+    cam_info = _get_camera_property(id_)
 
     if width < 8:
         raise ValueError('ROI width too small')
@@ -113,154 +113,154 @@ def _set_roi_format(id, width, height, bins, image_type):
     if cam_info['Name'] in ['ZWO ASI120MM', 'ZWO ASI120MC'] and (width * height) % 1024 != 0:
         raise ValueError('ROI width * height must be multiple of 1024 for ' +
                          cam_info['Name'])
-    r = zwolib.ASISetROIFormat(id, width, height, bins, image_type)
+    r = zwolib.ASISetROIFormat(id_, width, height, bins, image_type)
     if r:
         raise zwo_errors[r]
     return
 
 
-def _get_start_position(id):
+def _get_start_position(id_):
     start_x = c.c_int()
     start_y = c.c_int()
-    r = zwolib.ASIGetStartPos(id, start_x, start_y)
+    r = zwolib.ASIGetStartPos(id_, start_x, start_y)
     if r:
         raise zwo_errors[r]
     return [start_x.value, start_y.value]
 
 
-def _set_start_position(id, start_x, start_y):
+def _set_start_position(id_, start_x, start_y):
     if start_x < 0:
         raise ValueError('x start position too small')
     if start_y < 0:
         raise ValueError('y start position too small')
 
-    r = zwolib.ASISetStartPos(id, start_x, start_y)
+    r = zwolib.ASISetStartPos(id_, start_x, start_y)
     if r:
         raise zwo_errors[r]
     return
 
 
-def _get_dropped_frames(id):
+def _get_dropped_frames(id_):
     dropped_frames = c.c_int()
-    r = zwolib.ASIGetDroppedFrames(id, dropped_frames)
+    r = zwolib.ASIGetDroppedFrames(id_, dropped_frames)
     if r:
         raise zwo_errors[r]
     return dropped_frames.value
 
     
-def _enable_dark_subtract(id, filename):
-    r = zwolib.ASIEnableDarkSubtract(id, filename)
+def _enable_dark_subtract(id_, filename):
+    r = zwolib.ASIEnableDarkSubtract(id_, filename)
     if r:
         raise zwo_errors[r]
     return
 
 
-def _disable_dark_subtract(id):
-    r = zwolib.ASIDisableDarkSubtract(id)
-    if r:
-        raise zwo_errors[r]
-    return
-    
-
-def _start_video_capture(id):
-    r = zwolib.ASIStartVideoCapture(id)
+def _disable_dark_subtract(id_):
+    r = zwolib.ASIDisableDarkSubtract(id_)
     if r:
         raise zwo_errors[r]
     return
     
 
-def _stop_video_capture(id):
-    r = zwolib.ASIStopVideoCapture(id)
+def _start_video_capture(id_):
+    r = zwolib.ASIStartVideoCapture(id_)
+    if r:
+        raise zwo_errors[r]
+    return
+    
+
+def _stop_video_capture(id_):
+    r = zwolib.ASIStopVideoCapture(id_)
     if r:
         raise zwo_errors[r]
     return
 
 
-def _get_video_data(id, timeout, buffer=None):
-    if buffer is None:
-        whbi = _get_roi_format(id)
+def _get_video_data(id_, timeout, buffer_=None):
+    if buffer_ is None:
+        whbi = _get_roi_format(id_)
         sz = whbi[0] * whbi[1]
         if whbi[3] == ASI_IMG_RGB24:
             sz *= 3
         elif whbi[3] == ASI_IMG_RAW16:
             sz *= 2
-        buffer = bytearray(sz)
+        buffer_ = bytearray(sz)
     else:
-        if not isinstance(buffer, bytearray):
+        if not isinstance(buffer_, bytearray):
             raise TypeError('supplied buffer must be a bytearray')
-        sz = len(buffer)
+        sz = len(buffer_)
     
-    cbuf_type = c.c_char * len(buffer)
-    cbuf = cbuf_type.from_buffer(buffer)
-    r = zwolib.ASIGetVideoData(id, cbuf, sz, int(timeout))
+    cbuf_type = c.c_char * len(buffer_)
+    cbuf = cbuf_type.from_buffer(buffer_)
+    r = zwolib.ASIGetVideoData(id_, cbuf, sz, int(timeout))
     
     if r:
         raise zwo_errors[r]
-    return buffer
+    return buffer_
 
 
-def _pulse_guide_on(id, direction):
-    r = zwolib.ASIPulseGuideOn(id, direction)
+def _pulse_guide_on(id_, direction):
+    r = zwolib.ASIPulseGuideOn(id_, direction)
     if r:
         raise zwo_errors[r]
     return
 
 
-def _pulse_guide_off(id, direction):
-    r = zwolib.ASIPulseGuideOff(id, direction)
+def _pulse_guide_off(id_, direction):
+    r = zwolib.ASIPulseGuideOff(id_, direction)
     if r:
         raise zwo_errors[r]
     return
 
 
-def _start_exposure(id, is_dark):
-    r = zwolib.ASIStartExposure(id, is_dark)
+def _start_exposure(id_, is_dark):
+    r = zwolib.ASIStartExposure(id_, is_dark)
     if r:
         raise zwo_errors[r]
     return
 
 
-def _stop_exposure(id):
-    r = zwolib.ASIStopExposure(id)
+def _stop_exposure(id_):
+    r = zwolib.ASIStopExposure(id_)
     if r:
         raise zwo_errors[r]
     return
 
 
-def _get_exposure_status(id):
+def _get_exposure_status(id_):
     status = c.c_int()
-    r = zwolib.ASIGetExpStatus(id, status)
+    r = zwolib.ASIGetExpStatus(id_, status)
     if r:
         raise zwo_errors[r]
     return status.value
 
 
-def _get_data_after_exposure(id, buffer=None):
-    if buffer is None:
-        whbi = _get_roi_format(id)
+def _get_data_after_exposure(id_, buffer_=None):
+    if buffer_ is None:
+        whbi = _get_roi_format(id_)
         sz = whbi[0] * whbi[1]
         if whbi[3] == ASI_IMG_RGB24:
             sz *= 3
         elif whbi[3] == ASI_IMG_RAW16:
             sz *= 2
-        buffer = bytearray(sz)
+        buffer_ = bytearray(sz)
     else:
-        if not isinstance(buffer, bytearray):
+        if not isinstance(buffer_, bytearray):
             raise TypeError('supplied buffer must be a bytearray')
-        sz = len(buffer)
+        sz = len(buffer_)
     
-    cbuf_type = c.c_char * len(buffer)
-    cbuf = cbuf_type.from_buffer(buffer)
-    r = zwolib.ASIGetDataAfterExp(id, cbuf, sz)
+    cbuf_type = c.c_char * len(buffer_)
+    cbuf = cbuf_type.from_buffer(buffer_)
+    r = zwolib.ASIGetDataAfterExp(id_, cbuf, sz)
     
     if r:
         raise zwo_errors[r]
-    return buffer
+    return buffer_
 
 
-def _get_id(id):
+def _get_id(id_):
     id2 = _ASI_ID()
-    r = zwolib.ASIGetID(id, id2)
+    r = zwolib.ASIGetID(id_, id2)
     if r:
         raise zwo_errors[r]
     return id2.get_id()
@@ -270,12 +270,12 @@ def _get_id(id):
 #     pass
 
 
-def _get_gain_offset(id):
+def _get_gain_offset(id_):
     offset_highest_DR = c.c_int()
     offset_unity_gain = c.c_int()
     gain_lowest_RN = c.c_int()
     offset_lowest_RN = c.c_int()
-    r = zwolib.ASIGetGainOffset(id, offset_highest_DR, offset_unity_gain,
+    r = zwolib.ASIGetGainOffset(id_, offset_highest_DR, offset_unity_gain,
                                 gain_lowest_RN, offset_lowest_RN)
     if r:
         raise zwo_errors[r]
@@ -284,13 +284,10 @@ def _get_gain_offset(id):
 
 
 def list_cameras():
-    """List all ZWO ASI cameras.
-
-    Returns a list strings suitable for printing."""
+    """Retrieves model names of all connected ZWO ASI cameras. Type :class:`list` of :class:`str`."""
     r = []
-    for id in range(get_num_cameras()):
-        prop = _get_camera_property(id)
-        r.append('Camera #%d: %s' % (id, prop['Name']))
+    for id_ in range(get_num_cameras()):
+        r.append(_get_camera_property(id_)['Name'])
     return r
 
 
@@ -304,35 +301,36 @@ class Camera(object):
 
     The constructor for a camera object requires the camera ID number or model. The camera destructor automatically
     closes the camera."""
-    def __init__(self, id):
-        if isinstance(id, int):
-            if id >= get_num_cameras() or id < 0:
+    def __init__(self, id_):
+        if isinstance(id_, int):
+            if id_ >= get_num_cameras() or id_ < 0:
                 raise IndexError('invalid id')
-        elif isinstance(id, six.string_types):
+        elif isinstance(id_, six.string_types):
             # Find first matching camera model
             found = False
             for n in range(get_num_cameras()):
-                prop = _get_camera_property(n)
-                if prop['Name'] in (id, 'ZWO ' + id):
+                model = _get_camera_property(n)['Name']
+                if model in (id_, 'ZWO ' + id_):
                     found = True
+                    id_ = n
                     break
             if not found:
-                raise ValueError('could not find camera model %s' % id)
-            id = n
+                raise ValueError('could not find camera model %s' % id_)
+
         else:
             raise TypeError('unknown type for id')
 
-        self.id = id
+        self.id = id_
         self.default_timeout = -1
         try:
-            _open_camera(id)
+            _open_camera(id_)
             self.closed = False
 
-            _init_camera(id)
+            _init_camera(id_)
         except Exception as e:
             self.closed = True
-            _close_camera(id)
-            logger.error('could not open camera ' + str(id))
+            _close_camera(id_)
+            logger.error('could not open camera ' + str(id_))
             logger.debug(traceback.format_exc())
             raise
             
@@ -456,8 +454,8 @@ class Camera(object):
     def get_exposure_status(self):
         return _get_exposure_status(self.id)
 
-    def get_data_after_exposure(self, buffer=None):
-        return _get_data_after_exposure(self.id, buffer)
+    def get_data_after_exposure(self, buffer_=None):
+        return _get_data_after_exposure(self.id, buffer_)
 
     def enable_dark_subtract(self, filename):
         _enable_dark_subtract(self.id, filename)
@@ -471,10 +469,10 @@ class Camera(object):
     def stop_video_capture(self):
         return _stop_video_capture(self.id)
 
-    def get_video_data(self, timeout=None, buffer=None):
+    def get_video_data(self, timeout=None, buffer_=None):
         if timeout is None:
             timeout = self.default_timeout
-        return _get_video_data(self.id, timeout, buffer)
+        return _get_video_data(self.id, timeout, buffer_)
 
     def pulse_guide_on(self, direction):
         _pulse_guide_on(self.id, direction)
@@ -496,7 +494,7 @@ class Camera(object):
         whbi[3] = image_type
         self.set_roi_format(*whbi)
 
-    def capture(self, initial_sleep=0.01, poll=0.01, buffer=None,
+    def capture(self, initial_sleep=0.01, poll=0.01, buffer_=None,
                 filename=None):
         """Capture a still image."""
         self.start_exposure()
@@ -511,7 +509,7 @@ class Camera(object):
         if status != ASI_EXP_SUCCESS:
             raise ZWO_Exception('Exposure problem (status was %d)' % status)
         
-        data = self.get_data_after_exposure(buffer)
+        data = self.get_data_after_exposure(buffer_)
         whbi = self.get_roi_format()
         shape = [whbi[1], whbi[0]]
         if whbi[3] == ASI_IMG_RAW8 or whbi[3] == ASI_IMG_Y8:
@@ -537,7 +535,7 @@ class Camera(object):
             logger.debug('wrote %s', filename)
         return img
 
-    def capture_video_frame(self, buffer=None, filename=None, timeout=None):
+    def capture_video_frame(self, buffer_=None, filename=None, timeout=None):
         """Capture a single frame from video. Type :class:`numpy.ndarray`.
 
         Video mode must have been started previously otherwise a ZWOException will be raised. A new buffer will be
@@ -546,7 +544,7 @@ class Camera(object):
         provided :py:func:`.Camera.capture_video_frame` will wait indefinitely unless a `timeout` has been given.
         The suggested `timeout` value, in milliseconds, is twice the exposure plus 500 ms."""
 
-        data = self.get_video_data(buffer=buffer, timeout=timeout)
+        data = self.get_video_data(buffer_=buffer_, timeout=timeout)
         
         whbi = self.get_roi_format()
         shape = [whbi[1], whbi[0]]
@@ -584,14 +582,14 @@ class Camera(object):
     def auto_exposure(self, auto=('Exposure', 'Gain')):
         controls = self.get_controls()
         r = []
-        for c in auto:
-            if c == 'BandWidth':
+        for ctrl in auto:
+            if ctrl == 'BandWidth':
                 continue  # auto setting is supported but is not an exposure setting
-            if c in controls and controls[c]['IsAutoSupported']:
-                self.set_control_value(controls[c]['ControlType'],
-                                       controls[c]['DefaultValue'],
+            if ctrl in controls and controls[ctrl]['IsAutoSupported']:
+                self.set_control_value(controls[ctrl]['ControlType'],
+                                       controls[ctrl]['DefaultValue'],
                                        auto=True)
-                r.append(c)
+                r.append(ctrl)
         return r
 
     def auto_wb(self, wb=('WB_B', 'WB_R')):
