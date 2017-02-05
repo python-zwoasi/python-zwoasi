@@ -16,6 +16,7 @@ __license__ = 'MIT'
 
 
 def get_num_cameras():
+    """Retrives the number of ZWO ASI cameras that are connected."""
     return zwolib.ASIGetNumOfConnectedCameras()
 
 
@@ -282,6 +283,9 @@ def _get_gain_offset(id):
 
 
 def list_cameras():
+    """List all ZWO ASI cameras.
+
+    Returns a list strings suitable for printing."""
     r = []
     for id in range(get_num_cameras()):
         prop = _get_camera_property(id)
@@ -290,10 +294,15 @@ def list_cameras():
 
 
 class ZWO_Exception(Exception):
+    """Exception class for all errors returned from the ASI library."""
     pass
     
 
 class Camera(object):
+    """Representation of ZWO ASI camera.
+
+    The constructor for a camera object requires the camera ID number. The camera destructor automatically closes the
+    camera."""
     def __init__(self, id):
         if not isinstance(id, int):
             raise TypeError('id must be an integer')
@@ -348,18 +357,38 @@ class Camera(object):
         return _get_dropped_frames(self.id)
          
     def close(self):
+        """Close the camera in the ASI library.
+
+        The destructor will automatically close the camera if it has not already been closed.
+        """
         try:
             _close_camera(self.id)
         finally:
             self.closed = True
 
     def get_roi(self):
+        """Retrieves the region of interest (ROI).
+
+        Returns a :class:`tuple` containing ``(start_x, start_y, width, height)``."""
         xywh = self.get_roi_start_position()
         whbi = self.get_roi_format()
         xywh.extend(whbi[0:2])
         return xywh
 
     def set_roi(self, start_x=None, start_y=None, width=None, height=None, bins=None, image_type=None):
+        """Set the region of interest (ROI).
+
+        If ``bins`` is not given then the current pixel binning value will be used. The ROI coordinates are considered
+        after binning has been taken into account, ie if ``bins=2`` then the maximum possible height is reduced by a
+        factor of two.
+
+        If ``width=None`` or ``height=None`` then the maximum respective value will be used. The ASI SDK
+        library requires that width is a multiple of 8 and height is a multiple of 2; a ValueError will be raised
+        if this is not the case.
+
+        If ``start_x=None`` then the ROI will be horizontally centred. If ``start_y=None`` then the ROI will be
+        vertically centred."""
+
         cam_info = self.get_camera_property()
         whbi = self.get_roi_format()
 
@@ -398,6 +427,10 @@ class Camera(object):
         _set_control_value(self.id, control_type, value, auto)
     
     def get_bin(self):
+        """Retrieves the pixel binning. Type :class:`int`.
+
+        A pixel binning of one means no binning is active, a value of 2 indicates two pixels horizontally and two
+        pixels vertically are binned."""
         return self.get_roi_format()[2]
 
     def start_exposure(self, is_dark=False):
@@ -451,6 +484,7 @@ class Camera(object):
 
     def capture(self, initial_sleep=0.01, poll=0.01, buffer=None,
                 filename=None):
+        """Capture a still image."""
         self.start_exposure()
         if initial_sleep:
             time.sleep(initial_sleep)
@@ -488,12 +522,16 @@ class Camera(object):
             image.save(filename)
             logger.debug('wrote %s', filename)
         return img
-         
-    '''Capture a single frame from video.
 
-    Video mode must have been started previously.
-    '''
     def capture_video_frame(self, buffer=None, filename=None, timeout=None):
+        """Capture a single frame from video. Type :class:`numpy.ndarray`.
+
+        Video mode must have been started previously otherwise a ZWOException will be raised. A new buffer will be
+        used to store the image unless one has been supplied with the `buffer` keyword argument.
+        If ``filename`` is not `None` the image is saved using :py:func:`PIL.Image.save`.
+        provided :py:func:`.Camera.capture_video_frame` will wait indefinitely unless a `timeout` has been given.
+        The suggested `timeout` value, in milliseconds, is twice the exposure plus 500 ms."""
+
         data = self.get_video_data(buffer=buffer, timeout=timeout)
         
         whbi = self.get_roi_format()
