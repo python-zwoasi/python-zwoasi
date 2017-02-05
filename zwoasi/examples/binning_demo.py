@@ -8,7 +8,7 @@ import zwoasi as asi
 
 
 __author__ = 'Steve Marple'
-__version__ = '0.0.17'
+__version__ = '0.0.18'
 __license__ = 'MIT'
 
 
