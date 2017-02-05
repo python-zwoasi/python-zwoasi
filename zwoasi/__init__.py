@@ -327,7 +327,7 @@ class Camera(object):
             self.closed = False
 
             _init_camera(id_)
-        except Exception as e:
+        except Exception:
             self.closed = True
             _close_camera(id_)
             logger.error('could not open camera ' + str(id_))
