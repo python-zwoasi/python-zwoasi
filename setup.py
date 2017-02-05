@@ -43,7 +43,7 @@ setup(
     author='Steve Marple',
     author_email='s.marple@lancaster.ac.uk',
     packages=find_packages(exclude=['tests*']),
-    install_requires=['matplotlib', 'numpy>=1.7', 'scipy', 'six'],
+    install_requires=['numpy>=1.7', 'six'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Education',
