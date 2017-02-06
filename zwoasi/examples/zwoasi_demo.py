@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import argparse
+import os
 import sys
 import time
 import zwoasi as asi
@@ -17,6 +19,23 @@ def save_control_values(filename, settings):
             f.write('%s: %s\n' % (k, str(settings[k])))
     print('Camera settings saved to %s' % filename)
 
+
+env_filename = os.getenv('ZWO_ASI_LIB')
+
+parser = argparse.ArgumentParser(description='Process and save images from a camera')
+parser.add_argument('filename',
+                    nargs='?',
+                    help='SDK library filename')
+args = parser.parse_args()
+
+# Initialize zwoasi with the name of the SDK library
+if args.filename:
+    asi.init(args.filename)
+elif env_filename:
+    asi.init(env_filename)
+else:
+    print('The filename of the SDK library is required (or set ZWO_ASI_LIB environment variable with the filename)')
+    sys.exit(1)
 
 num_cameras = asi.get_num_cameras()
 if num_cameras == 0:
