@@ -65,7 +65,7 @@ copyright = u'2017, Steve Marple'
 # The short X.Y version.
 # version = '0.0'
 # The full version, including alpha/beta/rc tags.
-release = '0.0.18'
+release = '0.0.19'
 
 # Modified, Steve Marple
 version = release.rpartition('.')[0]
