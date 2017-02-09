@@ -14,6 +14,7 @@ import sys
 import time
 import traceback
 
+
 __author__ = 'Steve Marple'
 __version__ = '0.0.19'
 __license__ = 'MIT'
@@ -296,14 +297,12 @@ def list_cameras():
 
 class ZWO_Error(Exception):
     """Exception class for errors returned from the :mod:`zwoasi` module."""
-
     def __init__(self, message):
         Exception.__init__(self, message)
 
 
 class ZWO_IOError(Exception):
     """Exception class for all errors returned from the ASI SDK library."""
-
     def __init__(self, message, error_code=None):
         Exception.__init__(self, message)
         self.error_code = error_code
@@ -311,7 +310,6 @@ class ZWO_IOError(Exception):
 
 class ZWO_CaptureError(Exception):
     """Exception class for when :func:`capture()` fails."""
-
     def __init__(self, message, exposure_status=None):
         Exception.__init__(self, message)
         self.exposure_status = exposure_status
@@ -322,7 +320,6 @@ class Camera(object):
 
     The constructor for a camera object requires the camera ID number or model. The camera destructor automatically
     closes the camera."""
-
     def __init__(self, id_):
         if isinstance(id_, int):
             if id_ >= get_num_cameras() or id_ < 0:
@@ -394,7 +391,6 @@ class Camera(object):
         """Close the camera in the ASI library.
 
         The destructor will automatically close the camera if it has not already been closed."""
-
         try:
             _close_camera(self.id)
         finally:
@@ -404,7 +400,6 @@ class Camera(object):
         """Retrieves the region of interest (ROI).
 
         Returns a :class:`tuple` containing ``(start_x, start_y, width, height)``."""
-
         xywh = self.get_roi_start_position()
         whbi = self.get_roi_format()
         xywh.extend(whbi[0:2])
@@ -423,7 +418,6 @@ class Camera(object):
 
         If ``start_x=None`` then the ROI will be horizontally centred. If ``start_y=None`` then the ROI will be
         vertically centred."""
-
         cam_info = self.get_camera_property()
         whbi = self.get_roi_format()
 
@@ -466,7 +460,6 @@ class Camera(object):
 
         A pixel binning of one means no binning is active, a value of 2 indicates two pixels horizontally and two
         pixels vertically are binned."""
-
         return self.get_roi_format()[2]
 
     def start_exposure(self, is_dark=False):
@@ -488,12 +481,20 @@ class Camera(object):
         _disable_dark_subtract(self.id)
         
     def start_video_capture(self):
+        """Enable video capture mode.
+
+        Retrieve video frames with :func:`capture_video_frame()`."""
         return _start_video_capture(self.id)
     
     def stop_video_capture(self):
+        """Leave video capture mode."""
         return _stop_video_capture(self.id)
 
     def get_video_data(self, timeout=None, buffer_=None):
+        """Retrieve a single video frame. Type :class:`bytearray`.
+
+        Low-level function to retrieve data. See :func:`capture_video_frame()` for a more convenient method to
+        acquire an image (and optionally save it)."""
         if timeout is None:
             timeout = self.default_timeout
         return _get_video_data(self.id, timeout, buffer_)
@@ -520,7 +521,7 @@ class Camera(object):
 
     def capture(self, initial_sleep=0.01, poll=0.01, buffer_=None,
                 filename=None):
-        """Capture a still image."""
+        """Capture a still image. Type :class:`numpy.ndarray`."""
         self.start_exposure()
         if initial_sleep:
             time.sleep(initial_sleep)
@@ -562,14 +563,12 @@ class Camera(object):
     def capture_video_frame(self, buffer_=None, filename=None, timeout=None):
         """Capture a single frame from video. Type :class:`numpy.ndarray`.
 
-        Video mode must have been started previously otherwise a ZWOException will be raised. A new buffer will be
-        used to store the image unless one has been supplied with the `buffer` keyword argument.
-        If ``filename`` is not `None` the image is saved using :py:func:`PIL.Image.save`.
-        provided :py:func:`.Camera.capture_video_frame` will wait indefinitely unless a `timeout` has been given.
-        The suggested `timeout` value, in milliseconds, is twice the exposure plus 500 ms."""
-
+        Video mode must have been started previously otherwise a :class:`ZWO_Error` will be raised. A new buffer
+        will be used to store the image unless one has been supplied with the `buffer` keyword argument.
+        If `filename` is not ``None`` the image is saved using :func:`PIL.Image.Image.save()`.
+        :func:`capture_video_frame()` will wait indefinitely unless a `timeout` has been given.
+        The SDK suggests that the `timeout` value, in milliseconds, is twice the exposure plus 500 ms."""
         data = self.get_video_data(buffer_=buffer_, timeout=timeout)
-        
         whbi = self.get_roi_format()
         shape = [whbi[1], whbi[0]]
         if whbi[3] == ASI_IMG_RAW8 or whbi[3] == ASI_IMG_Y8:
