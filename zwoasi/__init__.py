@@ -522,7 +522,7 @@ class Camera(object):
             img = np.frombuffer(data, dtype=np.uint8)
             shape.append(3)
         else:
-            raise Exception('Unsupported image type')
+            raise ValueError('Unsupported image type')
         img = img.reshape(shape)
 
         if filename is not None:
@@ -558,7 +558,7 @@ class Camera(object):
             img = np.frombuffer(data, dtype=np.uint8)
             shape.append(3)
         else:
-            raise Exception('Unsupported image type')
+            raise ValueError('Unsupported image type')
         img = img.reshape(shape)
 
         if filename is not None:
