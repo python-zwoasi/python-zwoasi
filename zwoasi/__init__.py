@@ -1,4 +1,9 @@
-"""Interface to ZWO ASI range of USB cameras."""
+"""Interface to ZWO ASI range of USB cameras.
+
+Calls to the `zwoasi` module may raise :class:`TypeError` or :class:`ValueError` exceptions if an input argument
+is incorrect. Failure conditions from within the module may raise exceptions of type :class:`ZWO_Error`. Errors from
+conditions specifically from the SDK C library are indicated by errors of type :class:`ZWO_IOError`; certain
+:func:`Camera.capture()` errors are signalled by :class:`ZWO_CaptureError`."""
 
 import ctypes as c
 import logging
@@ -128,9 +133,9 @@ def _get_start_position(id_):
 
 def _set_start_position(id_, start_x, start_y):
     if start_x < 0:
-        raise ValueError('x start position too small')
+        raise ValueError('X start position too small')
     if start_y < 0:
-        raise ValueError('y start position too small')
+        raise ValueError('Y start position too small')
 
     r = zwolib.ASISetStartPos(id_, start_x, start_y)
     if r:
@@ -185,7 +190,7 @@ def _get_video_data(id_, timeout, buffer_=None):
         buffer_ = bytearray(sz)
     else:
         if not isinstance(buffer_, bytearray):
-            raise TypeError('supplied buffer must be a bytearray')
+            raise TypeError('Supplied buffer must be a bytearray')
         sz = len(buffer_)
     
     cbuf_type = c.c_char * len(buffer_)
@@ -244,7 +249,7 @@ def _get_data_after_exposure(id_, buffer_=None):
         buffer_ = bytearray(sz)
     else:
         if not isinstance(buffer_, bytearray):
-            raise TypeError('supplied buffer must be a bytearray')
+            raise TypeError('Supplied buffer must be a bytearray')
         sz = len(buffer_)
     
     cbuf_type = c.c_char * len(buffer_)
@@ -289,11 +294,28 @@ def list_cameras():
     return r
 
 
-class ZWO_Exception(Exception):
-    """Exception class for all errors returned from the ASI library."""
+class ZWO_Error(Exception):
+    """Exception class for errors returned from the :mod:`zwoasi` module."""
 
-    pass
-    
+    def __init__(self, message):
+        Exception.__init__(self, message)
+
+
+class ZWO_IOError(Exception):
+    """Exception class for all errors returned from the ASI SDK library."""
+
+    def __init__(self, message, error_code=None):
+        Exception.__init__(self, message)
+        self.error_code = error_code
+
+
+class ZWO_CaptureError(Exception):
+    """Exception class for when :func:`capture()` fails."""
+
+    def __init__(self, message, exposure_status=None):
+        Exception.__init__(self, message)
+        self.exposure_status = exposure_status
+
 
 class Camera(object):
     """Representation of ZWO ASI camera.
@@ -304,7 +326,7 @@ class Camera(object):
     def __init__(self, id_):
         if isinstance(id_, int):
             if id_ >= get_num_cameras() or id_ < 0:
-                raise IndexError('invalid id')
+                raise IndexError('Invalid id')
         elif isinstance(id_, six.string_types):
             # Find first matching camera model
             found = False
@@ -315,10 +337,10 @@ class Camera(object):
                     id_ = n
                     break
             if not found:
-                raise ValueError('could not find camera model %s' % id_)
+                raise ValueError('Could not find camera model %s' % id_)
 
         else:
-            raise TypeError('unknown type for id')
+            raise TypeError('Unknown type for id')
 
         self.id = id_
         self.default_timeout = -1
@@ -408,7 +430,7 @@ class Camera(object):
         if bins is None:
             bins = whbi[2]
         elif 'SupportedBins' in cam_info and bins not in cam_info['SupportedBins']:
-            raise ValueError('illegal value for bins')
+            raise ValueError('Illegal value for bins')
 
         if image_type is None:
             image_type = whbi[3]
@@ -509,7 +531,7 @@ class Camera(object):
 
         status = self.get_exposure_status()
         if status != ASI_EXP_SUCCESS:
-            raise ZWO_Exception('Exposure problem (status was %d)' % status)
+            raise ZWO_CaptureError('Could not capture image', status)
         
         data = self.get_data_after_exposure(buffer_)
         whbi = self.get_roi_format()
@@ -570,8 +592,8 @@ class Camera(object):
                 mode = 'I;16'
             image = Image.fromarray(img, mode=mode)
             image.save(filename)
-            
             logger.debug('wrote %s', filename)
+
         return img
 
     def get_control_values(self):
@@ -682,7 +704,7 @@ def init(library_file=None):
     global zwolib
 
     if zwolib is not None:
-        raise Exception('library already initialized')
+        raise ZWO_Error('Library already initialized')
 
     if library_file is None:
         zwolib_filename = 'libASICamera2'
@@ -695,7 +717,7 @@ def init(library_file=None):
             libpath = os.getenv('DYLD_LIBRARY_PATH')
             ext = '.dylib'
         else:
-            raise Exception('library path and file must be supplied')
+            libpath = ext = None
         if libpath:
             for p in libpath.split(os.pathsep):
                 f = os.path.join(p, zwolib_filename + ext)
@@ -703,9 +725,9 @@ def init(library_file=None):
                     library_file = f
                     break
             if library_file is None:
-                raise Exception('%s%s not found on path %s' % (zwolib_filename, ext, libpath))
+                raise ZWO_Error('%s%s not found on path %s' % (zwolib_filename, ext, libpath))
         else:
-            raise Exception('require filename of the ASI SDK library')
+            raise ZWO_Error('Require filename of the ASI SDK library')
 
     zwolib = c.cdll.LoadLibrary(library_file)
 
@@ -872,22 +894,22 @@ ASI_EXP_FAILED = 3
 
 # Mapping of error numbers to exceptions. Zero is used for success.
 zwo_errors = [None,
-              ZWO_Exception('Invalid index'),
-              ZWO_Exception('Invalid ID'),
-              ZWO_Exception('Invalid control type'),
-              ZWO_Exception('Camera closed'),
-              ZWO_Exception('Camera removed'),
-              ZWO_Exception('Invalid path'),
-              ZWO_Exception('Invalid file format'),
-              ZWO_Exception('Invalid size'),
-              ZWO_Exception('Invalid image type'),
-              ZWO_Exception('Outside of boundary'),
-              ZWO_Exception('Timeout'),
-              ZWO_Exception('Invalid sequence'),
-              ZWO_Exception('Buffer too small'),
-              ZWO_Exception('Video mode active'),
-              ZWO_Exception('Exposure in progress'),
-              ZWO_Exception('General error'),
+              ZWO_IOError('Invalid index',1 ),
+              ZWO_IOError('Invalid ID', 2),
+              ZWO_IOError('Invalid control type', 3),
+              ZWO_IOError('Camera closed', 4),
+              ZWO_IOError('Camera removed', 5),
+              ZWO_IOError('Invalid path', 6),
+              ZWO_IOError('Invalid file format', 7),
+              ZWO_IOError('Invalid size', 8),
+              ZWO_IOError('Invalid image type', 9),
+              ZWO_IOError('Outside of boundary', 10),
+              ZWO_IOError('Timeout', 11),
+              ZWO_IOError('Invalid sequence', 12),
+              ZWO_IOError('Buffer too small', 13),
+              ZWO_IOError('Video mode active', 14),
+              ZWO_IOError('Exposure in progress', 15),
+              ZWO_IOError('General error', 16),
               ]
 
 # User must call init() before first use
