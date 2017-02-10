@@ -301,17 +301,17 @@ class ZWO_Error(Exception):
         Exception.__init__(self, message)
 
 
-class ZWO_IOError(Exception):
+class ZWO_IOError(ZWO_Error):
     """Exception class for all errors returned from the ASI SDK library."""
     def __init__(self, message, error_code=None):
-        Exception.__init__(self, message)
+        ZWO_Error.__init__(self, message)
         self.error_code = error_code
 
 
-class ZWO_CaptureError(Exception):
-    """Exception class for when :func:`capture()` fails."""
+class ZWO_CaptureError(ZWO_Error):
+    """Exception class for when :func:`Camera.capture()` fails."""
     def __init__(self, message, exposure_status=None):
-        Exception.__init__(self, message)
+        ZWO_Error.__init__(self, message)
         self.exposure_status = exposure_status
 
 
