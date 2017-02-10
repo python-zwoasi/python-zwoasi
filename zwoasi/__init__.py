@@ -21,7 +21,7 @@ __license__ = 'MIT'
 
 
 def get_num_cameras():
-    """Retrieves the number of ZWO ASI cameras that are connected."""
+    """Retrieves the number of ZWO ASI cameras that are connected. Type :class:`int`."""
     return zwolib.ASIGetNumOfConnectedCameras()
 
 
@@ -565,9 +565,9 @@ class Camera(object):
 
         Video mode must have been started previously otherwise a :class:`ZWO_Error` will be raised. A new buffer
         will be used to store the image unless one has been supplied with the `buffer` keyword argument.
-        If `filename` is not ``None`` the image is saved using :func:`PIL.Image.Image.save()`.
+        If `filename` is not ``None`` the image is saved using :py:meth:`PIL.Image.Image.save()`.
         :func:`capture_video_frame()` will wait indefinitely unless a `timeout` has been given.
-        The SDK suggests that the `timeout` value, in milliseconds, is twice the exposure plus 500 ms."""
+        The SDK suggests that the `timeout` value, in milliseconds, should be twice the exposure plus 500 ms."""
         data = self.get_video_data(buffer_=buffer_, timeout=timeout)
         whbi = self.get_roi_format()
         shape = [whbi[1], whbi[0]]
