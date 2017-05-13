@@ -831,15 +831,12 @@ def init(library_file=None):
     #
     # Leave out support for ASISetID for now
 
-
     zwolib.ASIGetGainOffset.argtypes = [c.c_int,
                                         c.POINTER(c.c_int),
                                         c.POINTER(c.c_int),
                                         c.POINTER(c.c_int),
                                         c.POINTER(c.c_int)]
     zwolib.ASIGetGainOffset.restype = c.c_int
-
-
 
 
 logger = logging.getLogger(__name__)
@@ -893,7 +890,7 @@ ASI_EXP_FAILED = 3
 
 # Mapping of error numbers to exceptions. Zero is used for success.
 zwo_errors = [None,
-              ZWO_IOError('Invalid index',1 ),
+              ZWO_IOError('Invalid index', 1),
               ZWO_IOError('Invalid ID', 2),
               ZWO_IOError('Invalid control type', 3),
               ZWO_IOError('Camera closed', 4),
