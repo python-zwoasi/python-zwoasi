@@ -102,14 +102,14 @@ def _set_roi_format(id_, width, height, bins, image_type):
 
     if width < 8:
         raise ValueError('ROI width too small')
-    elif width > cam_info['MaxWidth'] / bins:
+    elif width > int(cam_info['MaxWidth'] / bins):
         raise ValueError('ROI width larger than binned sensor width')
     elif width % 8 != 0:
         raise ValueError('ROI width must be multiple of 8')
 
     if height < 2:
         raise ValueError('ROI height too small')
-    elif height > cam_info['MaxHeight'] / bins:
+    elif height > int(cam_info['MaxHeight'] / bins):
         raise ValueError('ROI width larger than binned sensor height')
     elif height % 2 != 0:
         raise ValueError('ROI height must be multiple of 2')
@@ -430,20 +430,20 @@ class Camera(object):
             image_type = whbi[3]
             
         if width is None:
-            width = cam_info['MaxWidth'] / bins
+            width = int(cam_info['MaxWidth'] / bins)
             width -= width % 8  # Must be a multiple of 8
 
         if height is None:
-            height = cam_info['MaxHeight'] / bins
+            height = int(cam_info['MaxHeight'] / bins)
             height -= height % 2  # Must be a multiple of 2
 
         if start_x is None:
-            start_x = ((cam_info['MaxWidth']/bins) - width) / 2
-        if start_x + width > cam_info['MaxWidth'] / bins:
+            start_x = int((int(cam_info['MaxWidth'] / bins) - width) / 2)
+        if start_x + width > int(cam_info['MaxWidth'] / bins):
             raise ValueError('ROI and start position larger than binned sensor width')
         if start_y is None:
-            start_y = ((cam_info['MaxHeight']/bins) - height) / 2
-        if start_y + height > cam_info['MaxHeight'] / bins:
+            start_y = int((int(cam_info['MaxHeight'] / bins) - height) / 2)
+        if start_y + height > int(cam_info['MaxHeight'] / bins):
             raise ValueError('ROI and start position larger than binned sensor height')
 
         self.set_roi_format(width, height, bins, image_type)
