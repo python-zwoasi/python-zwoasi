@@ -696,7 +696,11 @@ class _ASI_ID(c.Structure):
     _fields_ = [('id', c.c_char * 8)]
 
     def get_id(self):
-        return self.id
+        # return self.id
+        v = self.id
+        if sys.version_info[0] >= 3 and isinstance(v, bytes):
+            v = v.decode()
+        return v
 
 
 def init(library_file=None):
