@@ -152,7 +152,7 @@ if 'Exposure' in controls and controls['Exposure']['IsAutoSupported']:
                                  auto=True)
 
     # Keep max gain to the default but allow exposure to be increased to its maximum value if necessary
-    camera.set_control_value(controls['AutoExpMaxExp']['ControlType'], controls['AutoExpMaxExp']['MaxValue'])
+    camera.set_control_value(controls['AutoExpMaxExpMS']['ControlType'], controls['AutoExpMaxExpMS']['MaxValue'])
 
     print('Waiting for auto-exposure to compute correct settings ...')
     sleep_interval = 0.100
