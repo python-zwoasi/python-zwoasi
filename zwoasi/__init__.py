@@ -16,7 +16,7 @@ import traceback
 
 
 __author__ = 'Steve Marple'
-__version__ = '0.0.22'
+__version__ = '0.0.22.1'
 __license__ = 'MIT'
 
 
@@ -875,6 +875,7 @@ ASI_GAMMA = 2
 ASI_WB_R = 3
 ASI_WB_B = 4
 ASI_BRIGHTNESS = 5
+ASI_OFFSET = 5
 ASI_BANDWIDTHOVERLOAD = 6
 ASI_OVERCLOCK = 7
 ASI_TEMPERATURE = 8  # return 10*temperature
