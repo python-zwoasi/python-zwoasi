@@ -287,6 +287,57 @@ def _get_gain_offset(id_):
             gain_lowest_RN.value, offset_lowest_RN.value]
 
 
+def _get_trigger_output_io_conf(id_, pin):
+    bPinHigh = c.c_int()
+    lDelay = c.c_long()
+    lDuration = c.c_long()
+    r = zwolib.ASIGetTriggerOutputIOConf(id_, pin, bPinHigh, lDelay, lDuration)
+
+    if r:
+        raise zwo_errors[r]
+    return [bPinHigh.value, lDelay.value, lDuration.value]
+
+
+def _set_trigger_output_io_conf(id_, pin, bPinHigh, lDelay, lDuration):
+    r = zwolib.ASISetTriggerOutputIOConf(id_, pin, bPinHigh, lDelay, lDuration)
+
+    if r:
+        raise zwo_errors[r]
+    return
+
+
+def _get_camera_support_mode(id_):
+    mode = _ASI_SUPPORTED_MODE()
+
+    r = zwolib.ASIGetCameraSupportMode(id_, mode)
+    if r:
+        raise zwo_errors[r]
+    return mode.get_dict()
+
+
+def _get_camera_mode(id_):
+    mode = c.c_int()
+    r = zwolib.ASIGetCameraMode(id_, mode)
+    if r:
+        raise zwo_errors[r]
+    return mode.value
+
+
+def _set_camera_mode(id_, mode):
+    r = zwolib.ASISetCameraMode(id_, mode)
+    if r:
+        raise zwo_errors[r]
+    return
+
+
+def _send_soft_trigger(id_, bStart):
+    r = zwolib.ASISendSoftTrigger(id_, bStart)
+    if r:
+        raise zwo_errors[r]
+    return
+
+
+
 def list_cameras():
     """Retrieves model names of all connected ZWO ASI cameras. Type :class:`list` of :class:`str`."""
     r = []
@@ -386,6 +437,24 @@ class Camera(object):
 
     def get_dropped_frames(self):
         return _get_dropped_frames(self.id)
+
+    def get_camera_support_mode(self):
+        return _get_camera_support_mode(self.id)
+
+    def get_camera_mode(self):
+        return _get_camera_mode(self.id)
+
+    def set_camera_mode(self, mode):
+        _set_camera_mode(self.id, mode)
+
+    def send_soft_trigger(self, bStart):
+        _send_soft_trigger(self.id, bStart)
+
+    def set_trigger_output_io_conf(self, pin, bPinHigh, iDelay, iDuration):
+        _set_trigger_output_io_conf(self.id, pin, bPinHigh, iDelay, iDuration)
+
+    def get_trigger_output_io_conf(self, pin):
+        return _get_trigger_output_io_conf(self.id, pin)
          
     def close(self):
         """Close the camera in the ASI library.
@@ -636,7 +705,10 @@ class _ASI_CAMERA_INFO(c.Structure):
         ('IsUSB3Host', c.c_int),
         ('IsUSB3Camera', c.c_int),
         ('ElecPerADU', c.c_float),
-        ('Unused', c.c_char * 24),
+        ('BitDepth', c.c_int),
+        ('IsTriggerCam', c.c_int),
+
+        ('Unused', c.c_char * 16)
     ]
     
     def get_dict(self):
@@ -701,6 +773,15 @@ class _ASI_ID(c.Structure):
         if sys.version_info[0] >= 3 and isinstance(v, bytes):
             v = v.decode()
         return v
+
+
+class _ASI_SUPPORTED_MODE(c.Structure):
+    _fields_ = [('SupportedCameraMode', c.c_int * 16)]
+
+    def get_dict(self):
+        base_dict = {k: getattr(self, k) for k, _ in self._fields_}
+        base_dict['SupportedCameraMode'] = [int(x) for x in base_dict['SupportedCameraMode']]
+        return base_dict
 
 
 def init(library_file=None):
@@ -842,6 +923,33 @@ def init(library_file=None):
                                         c.POINTER(c.c_int)]
     zwolib.ASIGetGainOffset.restype = c.c_int
 
+    zwolib.ASISetCameraMode.argtypes = [c.c_int, c.c_int]
+    zwolib.ASISetCameraMode.restype = c.c_int
+
+    zwolib.ASIGetCameraMode.argtypes = [c.c_int, c.POINTER(c.c_int)]
+    zwolib.ASIGetCameraMode.restype = c.c_int
+
+    zwolib.ASIGetCameraSupportMode.argtypes = [c.c_int, c.POINTER(_ASI_SUPPORTED_MODE)]
+    zwolib.ASIGetCameraSupportMode.restype = c.c_int
+
+    zwolib.ASISendSoftTrigger.argtypes = [c.c_int, c.c_int]
+    zwolib.ASISendSoftTrigger.restype = c.c_int
+
+    zwolib.ASISetTriggerOutputIOConf.argtypes = [c.c_int,
+                                                 c.c_int,
+                                                 c.c_int,
+                                                 c.c_long,
+                                                 c.c_long]
+    zwolib.ASISetTriggerOutputIOConf.restype = c.c_int
+
+    zwolib.ASIGetTriggerOutputIOConf.argtypes = [c.c_int,
+                                                 c.c_int,
+                                                 c.POINTER(c.c_int),
+                                                 c.POINTER(c.c_long),
+                                                 c.POINTER(c.c_long)]
+    zwolib.ASIGetTriggerOutputIOConf.restype = c.c_int
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -886,11 +994,28 @@ ASI_MONO_BIN = 18  # lead to less grid at software bin mode for color camera
 ASI_FAN_ON = 19
 ASI_PATTERN_ADJUST = 20
 
+# ASI_CAMERA_MODE
+ASI_MODE_NORMAL = 0 
+ASI_MODE_TRIG_SOFT_EDGE = 1
+ASI_MODE_TRIG_RISE_EDGE = 2
+ASI_MODE_TRIG_FALL_EDGE = 3
+ASI_MODE_TRIG_SOFT_LEVEL = 4
+ASI_MODE_TRIG_HIGH_LEVEL = 5
+ASI_MODE_TRIG_LOW_LEVEL = 6
+ASI_MODE_END = -1
+
+# ASI_TRIG_OUTPUT
+ASI_TRIG_OUTPUT_PINA = 0
+ASI_TRIG_OUTPUT_PINB = 1
+ASI_TRIG_OUTPUT_NONE = -1
+
+
 # ASI_EXPOSURE_STATUS
 ASI_EXP_IDLE = 0
 ASI_EXP_WORKING = 1
 ASI_EXP_SUCCESS = 2
 ASI_EXP_FAILED = 3
+
 
 # Mapping of error numbers to exceptions. Zero is used for success.
 zwo_errors = [None,
@@ -910,6 +1035,7 @@ zwo_errors = [None,
               ZWO_IOError('Video mode active', 14),
               ZWO_IOError('Exposure in progress', 15),
               ZWO_IOError('General error', 16),
+              ZWO_IOError('Invalid mode', 17)
               ]
 
 # User must call init() before first use
