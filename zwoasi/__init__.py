@@ -269,9 +269,11 @@ def _get_id(id_):
         raise zwo_errors[r]
     return id2.get_id()
 
-# TO DO: need to confirm correct function call parameters
-# def _set_id(id, id_str):
-#     pass
+
+def _set_id(id_, new_id):
+    r = zwolib.ASISetID(id_, ord(str(new_id)))
+    if r:
+        raise zwo_errors[r]
 
 
 def _get_gain_offset(id_):
@@ -509,7 +511,10 @@ class Camera(object):
 
     def get_id(self):
         return _get_id(self.id)
-    
+
+    def set_id(self, new_id):
+        _set_id(self.id, new_id)
+
     # Helper functions
     def get_image_type(self):
         return self.get_roi_format()[3]
