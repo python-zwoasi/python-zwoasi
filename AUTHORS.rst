@@ -7,4 +7,7 @@ Credits
 Contributors
 ------------
 
-Please append your name here when you submit your first pull request.
+- Asgaut Eng <asgaut@gmail.com>
+- Jochen Broz <jochen.broz@imail.de>
+- Matt Phair <mphair@plexium.com>
+- James Noss <jnoss@stsci.edu>
