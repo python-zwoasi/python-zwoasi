@@ -6,6 +6,7 @@ conditions specifically from the SDK C library are indicated by errors of type :
 :func:`Camera.capture()` errors are signalled by :class:`ZWO_CaptureError`."""
 
 import ctypes as c
+from ctypes.util import find_library
 import logging
 import numpy as np
 import os
@@ -793,30 +794,13 @@ def init(library_file=None):
     global zwolib
 
     if zwolib is not None:
-        raise ZWO_Error('Library already initialized')
+        return # Library already initialized. do nothing
 
     if library_file is None:
-        zwolib_filename = 'libASICamera2'
-        # You might expect ctypes.util.find_library() to be helpful here but it only returns the filename,
-        # not the path to the file (Linux, Python 2.7.9, ctypes 1.1.0). Expect user to find the library for us.
-        if sys.platform.startswith('linux'):
-            libpath = os.getenv('LD_LIBRARY_PATH')
-            ext = '.so'
-        elif sys.platform.startswith('darwin'):  # Mac OS X
-            libpath = os.getenv('DYLD_LIBRARY_PATH')
-            ext = '.dylib'
-        else:
-            libpath = ext = None
-        if libpath:
-            for p in libpath.split(os.pathsep):
-                f = os.path.join(p, zwolib_filename + ext)
-                if os.path.exists(f):
-                    library_file = f
-                    break
-            if library_file is None:
-                raise ZWO_Error('%s%s not found on path %s' % (zwolib_filename, ext, libpath))
-        else:
-            raise ZWO_Error('Require filename of the ASI SDK library')
+        library_file = find_library('ASICamera2')
+
+    if library_file is None:
+        raise ZWO_Error('ASI SDK library not found')
 
     zwolib = c.cdll.LoadLibrary(library_file)
 
@@ -1044,5 +1028,8 @@ zwo_errors = [None,
               ZWO_IOError('Invalid mode', 17)
               ]
 
-# User must call init() before first use
 zwolib = None
+try:
+    init() # Initialize library on import, will only run once.
+except ZWO_Error as e:
+    print("Warning: " + str(e), file=sys.stderr)

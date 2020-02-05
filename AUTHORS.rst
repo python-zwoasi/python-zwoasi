@@ -11,3 +11,4 @@ Contributors
 - Jochen Broz <jochen.broz@imail.de>
 - Matt Phair <mphair@plexium.com>
 - James Noss <jnoss@stsci.edu>
+- Jose I Romero <jose.cyborg@gmail.com>
