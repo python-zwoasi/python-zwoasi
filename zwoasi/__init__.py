@@ -271,7 +271,8 @@ def _get_id(id_):
 
 
 def _set_id(id_, new_id):
-    r = zwolib.ASISetID(id_, ord(str(new_id)))
+    id2 = _ASI_ID(new_id.encode())
+    r = zwolib.ASISetID(id_, id2)
     if r:
         raise zwo_errors[r]
 
@@ -911,15 +912,9 @@ def init(library_file=None):
     zwolib.ASIGetID.argtypes = [c.c_int, c.POINTER(_ASI_ID)]
     zwolib.ASIGetID.restype = c.c_int
 
-    # Include file suggests:
-    # zwolib.ASISetID.argtypes = [c.c_int, _ASI_ID]
-    #
-    # Suspect it should really be
-    # zwolib.ASISetID.argtypes = [c.c_int, c.POINTER(_ASI_ID)]
-    #
-    # zwolib.ASISetID.restype = c.c_int
-    #
-    # Leave out support for ASISetID for now
+    zwolib.ASISetID.argtypes = [c.c_int, _ASI_ID]
+    zwolib.ASISetID.restype = c.c_int
+
 
     zwolib.ASIGetGainOffset.argtypes = [c.c_int,
                                         c.POINTER(c.c_int),
