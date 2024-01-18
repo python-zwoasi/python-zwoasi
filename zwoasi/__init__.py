@@ -9,12 +9,10 @@ import ctypes as c
 from ctypes.util import find_library
 import logging
 import numpy as np
-import os
-import six
 import sys
 import time
 import traceback
-
+import logging
 
 __author__ = 'Steve Marple'
 __version__ = '0.1.0.1'
@@ -379,7 +377,7 @@ class Camera(object):
         if isinstance(id_, int):
             if id_ >= get_num_cameras() or id_ < 0:
                 raise IndexError('Invalid id')
-        elif isinstance(id_, six.string_types):
+        elif isinstance(id_, str):
             # Find first matching camera model
             found = False
             for n in range(get_num_cameras()):
@@ -1027,4 +1025,4 @@ zwolib = None
 try:
     init() # Initialize library on import, will only run once.
 except ZWO_Error as e:
-    print("Warning: " + str(e), file=sys.stderr)
+    logging.warning(str(e))
