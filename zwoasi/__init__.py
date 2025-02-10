@@ -15,7 +15,7 @@ import traceback
 import logging
 
 __author__ = 'Steve Marple'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __license__ = 'MIT'
 
 
@@ -121,6 +121,16 @@ def _set_roi_format(id_, width, height, bins, image_type):
         raise zwo_errors[r]
     return
 
+def _get_gps_data(id_):
+    start_line = _ASI_GPS_DATA()
+    end_line = _ASI_GPS_DATA()
+    r = zwolib.ASIGPSGetData(id_, c.byref(start_line), c.byref(end_line))
+    if r:
+        raise zwo_errors[r]
+    return {
+        'start_line': start_line.get_dict(),
+        'end_line': end_line.get_dict()
+    }
 
 def _get_start_position(id_):
     start_x = c.c_int()
@@ -338,8 +348,6 @@ def _send_soft_trigger(id_, bStart):
         raise zwo_errors[r]
     return
 
-
-
 def list_cameras():
     """Retrieves model names of all connected ZWO ASI cameras. Type :class:`list` of :class:`str`."""
     r = []
@@ -525,6 +533,14 @@ class Camera(object):
 
     def set_control_value(self, control_type, value, auto=False):
         _set_control_value(self.id, control_type, value, auto)
+
+    def get_gps_data(self):
+        """Retrieve GPS data from the camera.
+        
+        Returns a dictionary with two keys: 'start_line' and 'end_line', each containing
+        a dictionary of the GPS data.
+        """
+        return _get_gps_data(self.id)
     
     def get_bin(self):
         """Retrieves the pixel binning. Type :class:`int`.
@@ -768,6 +784,49 @@ class _ASI_CONTROL_CAPS(c.Structure):
             r[k] = bool(getattr(self, k))
         return r
 
+class _ASI_DATE_TIME(c.Structure):
+    _fields_ = [
+        ('Year', c.c_int),
+        ('Month', c.c_int),
+        ('Day', c.c_int),
+        ('Hour', c.c_int),
+        ('Minute', c.c_int),
+        ('Second', c.c_int),
+        ('Msecond', c.c_int),
+        ('Usecond', c.c_int),  # Minimum unit: 0.1us
+        ('Unused', c.c_char * 64)
+    ]
+    
+    def get_dict(self):
+        return {
+            'Year': self.Year,
+            'Month': self.Month,
+            'Day': self.Day,
+            'Hour': self.Hour,
+            'Minute': self.Minute,
+            'Second': self.Second,
+            'Msecond': self.Msecond,
+            'Usecond': self.Usecond
+        }
+
+class _ASI_GPS_DATA(c.Structure):
+    _fields_ = [
+        ('Datetime', _ASI_DATE_TIME),
+        ('Latitude', c.c_double),
+        ('Longitude', c.c_double),
+        ('Altitude', c.c_int),
+        ('SatelliteNum', c.c_int),
+        ('Unused', c.c_char * 64)
+    ]
+    
+    def get_dict(self):
+        return {
+            'Datetime': self.Datetime.get_dict(),
+            'Latitude': self.Latitude,
+            'Longitude': self.Longitude,
+            'Altitude': self.Altitude,
+            'SatelliteNum': self.SatelliteNum
+        }
 
 class _ASI_ID(c.Structure):
     _fields_ = [('id', c.c_char * 8)]
@@ -843,6 +902,9 @@ def init(library_file=None):
 
     zwolib.ASISetROIFormat.argtypes = [c.c_int, c.c_int, c.c_int, c.c_int, c.c_int]
     zwolib.ASISetROIFormat.restype = c.c_int
+
+    zwolib.ASIGPSGetData.argtypes = [c.c_int, c.POINTER(_ASI_GPS_DATA), c.POINTER(_ASI_GPS_DATA)]
+    zwolib.ASIGPSGetData.restype = c.c_int
 
     zwolib.ASIGetStartPos.argtypes = [c.c_int,
                                       c.POINTER(c.c_int),
@@ -1001,25 +1063,31 @@ ASI_EXP_FAILED = 3
 
 
 # Mapping of error numbers to exceptions. Zero is used for success.
-zwo_errors = [None,
-              ZWO_IOError('Invalid index', 1),
-              ZWO_IOError('Invalid ID', 2),
-              ZWO_IOError('Invalid control type', 3),
-              ZWO_IOError('Camera closed', 4),
-              ZWO_IOError('Camera removed', 5),
-              ZWO_IOError('Invalid path', 6),
-              ZWO_IOError('Invalid file format', 7),
-              ZWO_IOError('Invalid size', 8),
-              ZWO_IOError('Invalid image type', 9),
-              ZWO_IOError('Outside of boundary', 10),
-              ZWO_IOError('Timeout', 11),
-              ZWO_IOError('Invalid sequence', 12),
-              ZWO_IOError('Buffer too small', 13),
-              ZWO_IOError('Video mode active', 14),
-              ZWO_IOError('Exposure in progress', 15),
-              ZWO_IOError('General error', 16),
-              ZWO_IOError('Invalid mode', 17)
-              ]
+zwo_errors = [
+    None,
+    ZWO_IOError('Invalid index', 1),
+    ZWO_IOError('Invalid ID', 2),
+    ZWO_IOError('Invalid control type', 3),
+    ZWO_IOError('Camera closed', 4),
+    ZWO_IOError('Camera removed', 5),
+    ZWO_IOError('Invalid path', 6),
+    ZWO_IOError('Invalid file format', 7),
+    ZWO_IOError('Invalid size', 8),
+    ZWO_IOError('Invalid image type', 9),
+    ZWO_IOError('Outside of boundary', 10),
+    ZWO_IOError('Timeout', 11),
+    ZWO_IOError('Invalid sequence', 12),
+    ZWO_IOError('Buffer too small', 13),
+    ZWO_IOError('Video mode active', 14),
+    ZWO_IOError('Exposure in progress', 15),
+    ZWO_IOError('General error', 16),
+    ZWO_IOError('Invalid mode', 17),
+    ZWO_IOError('GPS not supported', 18),
+    ZWO_IOError('GPS version error', 19),
+    ZWO_IOError('GPS FPGA error', 20),
+    ZWO_IOError('GPS parameter out of range', 21),
+    ZWO_IOError('GPS data invalid', 22)
+]
 
 zwolib = None
 try:
