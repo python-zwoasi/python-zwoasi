@@ -15,7 +15,7 @@ import traceback
 import logging
 
 __author__ = 'Steve Marple'
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 __license__ = 'MIT'
 
 
@@ -407,8 +407,14 @@ class Camera(object):
             raise
             
     def __del__(self):
-            self.close()
-            
+        try:
+            # Check if the 'close' attribute exists and is callable
+            if self is not None and getattr(self, "close", None) and callable(self.close):
+                self.close()
+        except Exception:
+            # Silently ignore any exceptions during deletion
+            pass
+
     def get_camera_property(self):
         return _get_camera_property(self.id)
 
@@ -464,6 +470,10 @@ class Camera(object):
         The destructor will automatically close the camera if it has not already been closed."""
         try:
             _close_camera(self.id)
+        except:
+            logger.error('could not close camera ' + str(self.id))
+            logger.debug(traceback.format_exc())
+            raise
         finally:
             self.closed = True
 
