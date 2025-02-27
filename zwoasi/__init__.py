@@ -407,7 +407,14 @@ class Camera(object):
             raise
             
     def __del__(self):
-            self.close()
+        self.close()
+
+    def get_serial_number(self, id_):
+        serial = _ASI_SN()
+        r = zwolib.ASIGetSerialNumber(id_, serial)
+        if r:
+            raise zwo_errors[r]
+        return serial.get_serial_number()
             
     def get_camera_property(self):
         return _get_camera_property(self.id)
@@ -779,6 +786,13 @@ class _ASI_ID(c.Structure):
             v = v.decode()
         return v
 
+class _ASI_SN(c.Structure):
+    _fields_ = [('sn', c.c_ubyte * 8)]
+
+    def get_serial_number(self):
+        return '{:016x}'.format(int.from_bytes(self.sn, byteorder='big'))
+        
+
 
 class _ASI_SUPPORTED_MODE(c.Structure):
     _fields_ = [('SupportedCameraMode', c.c_int * 16)]
@@ -802,6 +816,9 @@ def init(library_file=None):
         raise ZWO_Error('ASI SDK library not found')
 
     zwolib = c.cdll.LoadLibrary(library_file)
+
+    zwolib.ASIGetSerialNumber.argtypes = [c.c_int, c.POINTER(_ASI_SN)]
+    zwolib.ASIGetSerialNumber.restype = c.c_int
 
     zwolib.ASIGetNumOfConnectedCameras.argtypes = []
     zwolib.ASIGetNumOfConnectedCameras.restype = c.c_int
