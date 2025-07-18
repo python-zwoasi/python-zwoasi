@@ -1042,4 +1042,4 @@ zwolib = None
 try:
     init() # Initialize library on import, will only run once.
 except ZWO_Error as e:
-    logging.warning(str(e))
+    logger.warning(str(e))
