@@ -407,7 +407,11 @@ class Camera(object):
             raise
             
     def __del__(self):
-        self.close()
+        try:
+            self.close()
+        except Exception:
+            # Silently ignore any exceptions during deletion
+            pass
 
     def get_serial_number(self, id_):
         serial = _ASI_SN()
@@ -415,7 +419,7 @@ class Camera(object):
         if r:
             raise zwo_errors[r]
         return serial.get_serial_number()
-            
+
     def get_camera_property(self):
         return _get_camera_property(self.id)
 
